@@ -26,7 +26,6 @@ package com.ea.matchingengine.feed.quote;
  *
  */
 
-import com.ea.matchingengine.book.Book;
 import com.ea.matchingengine.book.BookKey;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -34,10 +33,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;

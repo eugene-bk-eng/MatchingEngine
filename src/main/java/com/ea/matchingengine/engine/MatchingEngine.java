@@ -16,7 +16,7 @@ public interface MatchingEngine {
 
     void shutdown();
 
-    void processQueue() throws InterruptedException;
+    void processNextQueueMsg() throws InterruptedException;
 
     QuoteFeed getQuoteFeed();
 

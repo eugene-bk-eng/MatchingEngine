@@ -78,7 +78,7 @@ public class MatchingEngineImpl implements MatchingEngine {
             public void run() {
                 try {
                     while (flagDispatchQueue) {
-                        processQueue();
+                        processNextQueueMsg();
                     }
                 } catch (InterruptedException e) {
                     logger.error(e.getLocalizedMessage(), e);
@@ -89,7 +89,7 @@ public class MatchingEngineImpl implements MatchingEngine {
     }
 
     @Override
-    public void processQueue() throws InterruptedException {
+    public void processNextQueueMsg() throws InterruptedException {
         // blocking call. will return either a new or existing book for this symbol.
         Request request = mapBookOrdQueue.get(timePriority.take()).take();
         Book book = mapBook.computeIfAbsent(request.getSym(), p -> new BookImpl(request.getSym(), getQuoteFeed(), getTradeFeed()));

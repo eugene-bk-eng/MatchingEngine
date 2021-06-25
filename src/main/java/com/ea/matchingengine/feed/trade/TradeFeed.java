@@ -13,7 +13,10 @@ import java.util.List;
  * ADDITION TO FIX MESSAGE THAT YOU MUST SEND TO CLIENTS.
  **/
 public interface TradeFeed {
+
     void reportTrade(String symbol, int qtyMatch, double pxMatch);
+
+    List<TradeMsg> getLastTrades();
 
     List<TradeMsg> getLastTrades(String symbol);
 }
