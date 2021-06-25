@@ -38,6 +38,7 @@ public class TestMatchingEngine {
     @Before
     public void setup() {
         engine = new MatchingEngineImplForTest();
+        engine.startMatching();
         bidBook.clear();
         offerBook.clear();
         tradesFeed.clear();
@@ -59,6 +60,9 @@ public class TestMatchingEngine {
         engine.processQueue();
         engine.accept(createBuyLmt(sym, 200, 10.30));
         engine.processQueue();
+        // add another order on that level
+        engine.accept(createBuyLmt(sym, 300, 10.50));
+        engine.processQueue();
 
         engine.accept(createSellLmt(sym, 100, 15.00));
         engine.processQueue();
@@ -70,7 +74,7 @@ public class TestMatchingEngine {
         // construct expected book and verify
         // highest bid price to clients is on top.
         // this is the best price exch willing to buy at, followed by next best
-        bidBook.add(makeQuote(sym, 100, 10.50));
+        bidBook.add(makeQuote(sym, 400, 10.50));
         bidBook.add(makeQuote(sym, 200, 10.30));
         bidBook.add(makeQuote(sym, 300, 10.20));
         assertBidBook(sym, bidBook);
@@ -274,7 +278,6 @@ public class TestMatchingEngine {
     }
 
     class MatchingEngineImplForTest extends MatchingEngineImpl {
-
         @Override
         public void initDispatch() {
         }

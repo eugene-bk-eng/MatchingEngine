@@ -34,11 +34,11 @@ public class BookImpl extends AbstractBook {
         switch (order.getSide()) {
             case BUY:
                 // matching client buy to OFFER side
-                matchOrder(order, askMap, bidMap, FeedMsgSide.OFFER);
+                findMatch(order, askMap, bidMap, FeedMsgSide.OFFER);
                 break;
             case SELL:
                 // matching client sell to BID side
-                matchOrder(order, bidMap, askMap, FeedMsgSide.BID);
+                findMatch(order, bidMap, askMap, FeedMsgSide.BID);
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -52,43 +52,46 @@ public class BookImpl extends AbstractBook {
      * @param restingBook
      * @param updateMatchedBookSide
      */
-    void matchOrder(Order order, Map<BookKey, List<Order>> mapMatch, Map<BookKey, List<Order>> restingBook, FeedMsgSide updateMatchedBookSide) {
+    void findMatch(Order order, Map<BookKey, List<Order>> mapMatch, Map<BookKey, List<Order>> restingBook, FeedMsgSide updateMatchedBookSide) {
         // look for match in ASK/OFFER
-        for (Map.Entry<BookKey, List<Order>> e : mapMatch.entrySet()) {
+        for (Map.Entry<BookKey, List<Order>> e: mapMatch.entrySet()) {
             BookKey bookKey=e.getKey();
             double pxLevel = bookKey.getPrice();
             boolean matchOrder = isMatchable(updateMatchedBookSide,pxLevel, order.getPrice());
             if (matchOrder) {
-                // if resting order price
-                int successfullyMatchedOrdersCnt=0;
-                int beforeQtySum = 0, afterQtySum = 0;
-                Iterator<Order> t = e.getValue().iterator();
-                while (t.hasNext()) {
-                    Order bookOrder = t.next();
-                    if (order.getOpenQty() > 0) {
-                        // match order and create fix messages
-                        // trade feed is updated on each execution
-                        beforeQtySum += bookOrder.getOpenQty();
-                        if( matchAndCreateFix(order, bookOrder) ) {
-                            successfullyMatchedOrdersCnt++;
-                            afterQtySum += bookOrder.getOpenQty();
-                            if (bookOrder.getOpenQty() == 0) {
-                                // remove from the book
-                                // TODO: if you replace with array, just set tombstone (null pointer)
-                                t.remove();
-                            }
-                        }
-                    }
-                }
-                // update market feed for this price level.
-                if( successfullyMatchedOrdersCnt>0 ) {
-                    quoteFeed.reportBookChange(updateMatchedBookSide, order.getSym(), bookKey, beforeQtySum, afterQtySum);
-                }
+                matchOrder(order, bookKey, e.getValue().iterator(), updateMatchedBookSide );
             }
         }
 
         // post remaining order quantity to book
         postOpenQty(order, restingBook, updateMatchedBookSide.flip());
+    }
+
+    private void matchOrder(Order order, BookKey bookKey, Iterator<Order> ordersOnLevelIter, FeedMsgSide updateMatchedBookSide) {
+        // if resting order price
+        int successfullyMatchedOrdersCnt=0;
+        int beforeQtySum = 0, afterQtySum = 0;
+        while (ordersOnLevelIter.hasNext()) {
+            Order bookOrder = ordersOnLevelIter.next();
+            if (order.getOpenQty() > 0) {
+                // match order and create fix messages
+                // trade feed is updated on each execution
+                beforeQtySum += bookOrder.getOpenQty();
+                if( matchAndCreateFix(order, bookOrder) ) {
+                    successfullyMatchedOrdersCnt++;
+                    afterQtySum += bookOrder.getOpenQty();
+                    if (bookOrder.getOpenQty() == 0) {
+                        // remove from the book
+                        // TODO: if you replace with array, just set tombstone (null pointer)
+                        ordersOnLevelIter.remove();
+                    }
+                }
+            }
+        }
+        // update market feed for this price level.
+        if( successfullyMatchedOrdersCnt>0 ) {
+            quoteFeed.reportBookChange(updateMatchedBookSide, order.getSym(), bookKey, beforeQtySum, afterQtySum);
+        }
     }
 
     /**
@@ -100,7 +103,7 @@ public class BookImpl extends AbstractBook {
      * @param orderPrice
      * @return
      */
-    boolean isMatchable(FeedMsgSide updateMatchedBookSide, double pxLevel, double orderPrice) {
+    private boolean isMatchable(FeedMsgSide updateMatchedBookSide, double pxLevel, double orderPrice) {
         if (updateMatchedBookSide == FeedMsgSide.OFFER && pxLevel <= orderPrice) {
             // if resting order price is less than incoming buy then we can give price improvement to both
             return true;
@@ -112,21 +115,21 @@ public class BookImpl extends AbstractBook {
         return false;
     }
 
-    void postOpenQty(Order order, Map<BookKey, List<Order>> restingBook, FeedMsgSide restingSide) {
+    private void postOpenQty(Order order, Map<BookKey, List<Order>> restingBook, FeedMsgSide restingSide) {
         if (isPostable(order)) {
             if (order.getOpenQty() > 0) {
                 // add or update some level
                 if (restingBook.containsKey(new BookKey(order.getPrice()))) {
                     // add quantity on this level
-                    int beforeQty = restingBook.get(order.getPrice()).stream().mapToInt(s -> s.getOpenQty()).sum();
+                    int beforeQty = restingBook.get(new BookKey(order.getPrice())).stream().mapToInt(s -> s.getOpenQty()).sum();
                     // update level
-                    restingBook.get(order.getPrice()).add(order);
+                    restingBook.get(new BookKey(order.getPrice())).add(order);
                     // update market feed for this level.
                     int afterQty = beforeQty + order.getOpenQty();
                     quoteFeed.reportBookChange(restingSide, order.getSym(), new BookKey(order.getPrice()), beforeQty, afterQty);
                 } else {
                     // add new level
-                    restingBook.computeIfAbsent(new BookKey(order.getPrice()), p -> new ArrayList()).add(order);
+                    restingBook.computeIfAbsent(new BookKey(order.getPrice()), p -> new ArrayList<Order>()).add(order);
                     // update market feed for this level.
                     int beforeQty = 0; // level had nothing
                     int afterQty = order.getOpenQty();
@@ -134,17 +137,17 @@ public class BookImpl extends AbstractBook {
                 }
             } else {
                 // cancel back to client?
-                if (order.getOpenQty() > 0) {
-                    // order has open quantity, send unsolicited cxl back.
-                } else {
-                    // order is fully done. nothing is required
-                }
+//                if (order.getOpenQty() > 0) {
+//                    // order has open quantity, send unsolicited cxl back.
+//                } else {
+//                    // order is fully done. nothing is required
+//                }
             }
         }
     }
 
     // TODO: is day and limit order
-    boolean isPostable(Order order) {
+    private boolean isPostable(Order order) {
         if (order.getType() == OrderType.LMT) {
             return true;
         }
@@ -192,13 +195,13 @@ public class BookImpl extends AbstractBook {
     }
 
     // TODO: implement
-    public boolean isMatchPriceWithinNBBO(String sym, double matchPx) {
+    private  boolean isMatchPriceWithinNBBO(String sym, double matchPx) {
         return true;
     }
 
     @Override
     public void match(Cancel cancel) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override

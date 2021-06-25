@@ -13,7 +13,7 @@ public abstract class AbstractBook implements Book {
     public final QuoteFeed quoteFeed;
     public final TradeFeed tradeFeed;
 
-    public AbstractBook(String bookSymbol, QuoteFeed quoteFeed, TradeFeed tradeFeed) {
+    protected AbstractBook(String bookSymbol, QuoteFeed quoteFeed, TradeFeed tradeFeed) {
         this.bookSymbol = bookSymbol;
         this.quoteFeed = quoteFeed;
         this.tradeFeed = tradeFeed;

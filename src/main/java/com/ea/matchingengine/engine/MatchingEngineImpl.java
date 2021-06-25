@@ -52,6 +52,10 @@ public class MatchingEngineImpl implements MatchingEngine {
         quoteFeed = new QuoteFeedImpl();
         tradeFeed = new TradeFeedImpl();
 
+    }
+
+    @Override
+    public void startMatching() {
         initDispatch();
     }
 
@@ -78,6 +82,7 @@ public class MatchingEngineImpl implements MatchingEngine {
                     }
                 } catch (InterruptedException e) {
                     logger.error(e.getLocalizedMessage(), e);
+                    Thread.currentThread().interrupt(); // does not require declaring exception yet will carry error.
                 }
             }
         });
@@ -142,6 +147,10 @@ public class MatchingEngineImpl implements MatchingEngine {
 
     @Override
     public void shutdown() {
+        // TODO: add shutdown routines
+        if( executorService!=null ) {
+            executorService.shutdown();
+        }
     }
 
     void validate(Request request) {

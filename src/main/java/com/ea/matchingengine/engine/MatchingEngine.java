@@ -9,7 +9,10 @@ import com.ea.matchingengine.feed.trade.TradeFeed;
 import com.ea.matchingengine.fix.input.Request;
 
 public interface MatchingEngine {
+
     void accept(Request order);
+
+    void startMatching();
 
     void shutdown();
 

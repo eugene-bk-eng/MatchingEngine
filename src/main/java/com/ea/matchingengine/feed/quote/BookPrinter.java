@@ -19,15 +19,18 @@ import java.util.Map;
 public class BookPrinter {
 
     public String getBook(String symbol, Map<String, Map<BookKey, QuoteMsg>> bids, Map<String, Map<BookKey, QuoteMsg>> offers) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\n" + rightPad(".................. " + "BOOK: " + symbol + " ..................", 50) + "\n");
-        sb.append(rightPad("-------- " + "BID" + "(" + bids.size() + ")" + " --------", 25));
-        sb.append("|");
-        sb.append(leftPad("-------- " + "ASK" + "(" + offers.size() + ")" + " ---------", 25) + "\n");
+
         List<BookKey> nbids = Lists.newArrayList(bids.computeIfAbsent(symbol, p -> new HashMap()).keySet());
         List<BookKey> noffers = Lists.newArrayList(offers.computeIfAbsent(symbol, p -> new HashMap()).keySet());
         Collections.sort(nbids, Comparator.reverseOrder());   // first or best is highest price for bid
         Collections.sort(noffers, Comparator.reverseOrder()); // first or best is lowest offer for ask
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n" + rightPad(".................. " + "BOOK: " + symbol + " ..................", 50) + "\n");
+        sb.append(rightPad("-------- " + "BID" + "(" + nbids.size() + ")" + " --------", 25));
+        sb.append("|");
+        sb.append(leftPad("-------- " + "ASK" + "(" + noffers.size() + ")" + " ---------", 25) + "\n");
+
 
         // ask side
         for (int i = 0; i < noffers.size(); i++) {

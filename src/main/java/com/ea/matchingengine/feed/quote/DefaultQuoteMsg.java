@@ -54,4 +54,15 @@ public class DefaultQuoteMsg implements QuoteMsg {
     public int hashCode() {
         return Objects.hash(symbol, price, qty);
     }
+
+    @Override
+    public String toString() {
+        return "DefaultQuoteMsg{" +
+                "symbol='" + symbol + '\'' +
+                ", price=" + price +
+                ", qty=" + qty +
+                ", timestamp_rcvd=" + timestamp_rcvd +
+                ", regularTime=" + regularTime +
+                '}';
+    }
 }
