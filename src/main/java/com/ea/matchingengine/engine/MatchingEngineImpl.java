@@ -18,11 +18,13 @@ import com.ea.matchingengine.fix.input.Order;
 import com.ea.matchingengine.fix.input.OrderImpl;
 import com.ea.matchingengine.fix.input.Request;
 import com.google.common.base.Preconditions;
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
@@ -46,7 +48,7 @@ public class MatchingEngineImpl implements MatchingEngine {
     volatile boolean flagDispatchQueue;
     ExecutorService executorService;
 
-    public MatchingEngineImpl() {
+    public MatchingEngineImpl(org.apache.commons.configuration2.Configuration config) {
 
         // set up book feed
         quoteFeed = new QuoteFeedImpl();
@@ -56,10 +58,12 @@ public class MatchingEngineImpl implements MatchingEngine {
 
     @Override
     public void startMatching() {
+        logger.info("startMatching");
         initDispatch();
     }
 
     public void initDispatch() {
+        logger.info("initDispatch");
         // set up thread pool
         executorService = Executors.newSingleThreadExecutor();
 
@@ -71,6 +75,7 @@ public class MatchingEngineImpl implements MatchingEngine {
      * Starts matching engine processing incoming requests
      */
     void startDispatch() {
+        logger.info("startDispatch");
         // set up thread dispatching blocking queue
         flagDispatchQueue = true;
         executorService.submit(new Runnable() {
@@ -78,7 +83,7 @@ public class MatchingEngineImpl implements MatchingEngine {
             public void run() {
                 try {
                     while (flagDispatchQueue) {
-                        processNextQueueMsg();
+                        waitAndProcessNextMsg();
                     }
                 } catch (InterruptedException e) {
                     logger.error(e.getLocalizedMessage(), e);
@@ -88,8 +93,10 @@ public class MatchingEngineImpl implements MatchingEngine {
         });
     }
 
+
     @Override
-    public void processNextQueueMsg() throws InterruptedException {
+    public void waitAndProcessNextMsg() throws InterruptedException {
+        logger.debug("processNextQueueMsg");
         // blocking call. will return either a new or existing book for this symbol.
         Request request = mapBookOrdQueue.get(timePriority.take()).take();
         Book book = mapBook.computeIfAbsent(request.getSym(), p -> new BookImpl(request.getSym(), getQuoteFeed(), getTradeFeed()));
@@ -176,6 +183,7 @@ public class MatchingEngineImpl implements MatchingEngine {
     }
 
     public static void main(String args[]) throws Exception {
-        new MatchingEngineImpl();
+        org.apache.commons.configuration2.Configuration config=new MapConfiguration(new HashMap());
+        new MatchingEngineImpl(config);
     }
 }

@@ -11,19 +11,22 @@ import com.ea.matchingengine.fix.input.OrderImpl;
 import com.ea.matchingengine.fix.input.OrderSide;
 import com.ea.matchingengine.fix.input.OrderType;
 import com.google.common.collect.Lists;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * @author : eugene
  * @created : 6/25/2021, Friday
  **/
-public class TestBase {
+public abstract class AbstractTestBase {
 
     private static final Logger logger = LogManager.getLogger(TestMatchingEngine.class);
     MatchingEngine engine;
@@ -35,7 +38,8 @@ public class TestBase {
 
     @Before
     public void setup() {
-        engine = new MatchingEngineImplForTest();
+        org.apache.commons.configuration2.Configuration config=new MapConfiguration(new HashMap());
+        engine = new MatchingEngineImplForTest(config);
         engine.startMatching();
         bidBook.clear();
         offerBook.clear();
@@ -106,6 +110,11 @@ public class TestBase {
     }
 
     public class MatchingEngineImplForTest extends MatchingEngineImpl {
+
+        public MatchingEngineImplForTest(Configuration config) {
+            super(config);
+        }
+
         @Override
         public void initDispatch() {
         }

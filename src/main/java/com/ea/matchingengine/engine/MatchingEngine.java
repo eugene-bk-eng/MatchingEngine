@@ -10,13 +10,22 @@ import com.ea.matchingengine.fix.input.Request;
 
 public interface MatchingEngine {
 
+    /**
+     * Non blocking call. places request on the queue
+     * @param order
+     */
     void accept(Request order);
 
     void startMatching();
 
     void shutdown();
 
-    void processNextQueueMsg() throws InterruptedException;
+    /**
+     * Blocking call if there is nothing to take.
+     * internal threads are used to dispatch
+     * @throws InterruptedException
+     */
+    void waitAndProcessNextMsg() throws InterruptedException;
 
     QuoteFeed getQuoteFeed();
 

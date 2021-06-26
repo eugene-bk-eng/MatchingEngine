@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 
-public class TestMatchingEngine extends TestBase {
+public class TestMatchingEngine extends AbstractTestBase {
 
     private static final Logger logger = LogManager.getLogger(TestMatchingEngine.class);
 
@@ -21,19 +21,19 @@ public class TestMatchingEngine extends TestBase {
     public void testQuotePlacementAndOrdering() throws InterruptedException {
 
         engine.accept(buyLimitDayOrder(SYM_IBM, 300, 10.20));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
         engine.accept(buyLimitDayOrder(SYM_IBM, 100, 10.50));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
         engine.accept(buyLimitDayOrder(SYM_IBM, 200, 10.30));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
         // add another order on that level
         engine.accept(buyLimitDayOrder(SYM_IBM, 300, 10.50));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
 
         engine.accept(sellLimitDayOrder(SYM_IBM, 100, 15.00));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
         engine.accept(sellLimitDayOrder(SYM_IBM, 200, 15.10));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
 
         showBook(SYM_IBM);
 
@@ -56,13 +56,13 @@ public class TestMatchingEngine extends TestBase {
     public void testSimpleMatch() throws InterruptedException {
 
         engine.accept(buyLimitDayOrder(SYM_IBM, 100, 10.50));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
 
         assertBidBook(SYM_IBM, Lists.newArrayList(makeQuote(SYM_IBM, 100, 10.50)));
         assertOfferBook(SYM_IBM, Lists.newArrayList());
 
         engine.accept(sellLimitDayOrder(SYM_IBM, 100, 10.50));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
 
         showBook(SYM_IBM);
 
@@ -79,9 +79,9 @@ public class TestMatchingEngine extends TestBase {
     public void testMatchAndPost() throws InterruptedException {
 
         engine.accept(buyLimitDayOrder(SYM_IBM, 100, 15.00));
-        engine.processNextQueueMsg(); // post on bid
+        engine.waitAndProcessNextMsg(); // post on bid
         engine.accept(sellLimitDayOrder(SYM_IBM, 300, 10.00));
-        engine.processNextQueueMsg(); // match, post on ask
+        engine.waitAndProcessNextMsg(); // match, post on ask
 
         showBook(SYM_IBM);
 
@@ -97,14 +97,14 @@ public class TestMatchingEngine extends TestBase {
     public void testMatchAndPostTwoSymbols() throws InterruptedException {
 
         engine.accept(buyLimitDayOrder(SYM_IBM, 100, 15.00));
-        engine.processNextQueueMsg(); // post on bid
+        engine.waitAndProcessNextMsg(); // post on bid
         engine.accept(sellLimitDayOrder(SYM_IBM, 300, 10.00));
-        engine.processNextQueueMsg(); // match, post on ask
+        engine.waitAndProcessNextMsg(); // match, post on ask
 
         engine.accept(sellLimitDayOrder(SYM_AAPL, 250, 10.20));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
         engine.accept(buyLimitDayOrder(SYM_AAPL, 100, 10.20));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
 
         showBook(SYM_IBM);
 
@@ -140,9 +140,9 @@ public class TestMatchingEngine extends TestBase {
         String sym = "ibm.n";
 
         engine.accept(buyLimitDayOrder(SYM_IBM, 100, 10.5055667));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
         engine.accept(sellLimitDayOrder(SYM_IBM, 100, 11.789));
-        engine.processNextQueueMsg();
+        engine.waitAndProcessNextMsg();
 
         showBook(sym);
 
@@ -176,7 +176,7 @@ public class TestMatchingEngine extends TestBase {
             double orderPrice = initialPrice + i * delta;
             lastPrice = orderPrice;
             engine.accept(buyLimitDayOrder(SYM_IBM, 100, orderPrice));
-            engine.processNextQueueMsg();
+            engine.waitAndProcessNextMsg();
         }
         // sells go in the opposite direction, starting from the highest bid
         // bid is how much you are willing to pay for something
@@ -186,7 +186,7 @@ public class TestMatchingEngine extends TestBase {
             double orderPrice = initialPrice - i * delta;
             lastPrice = orderPrice;
             engine.accept(sellLimitDayOrder(SYM_IBM, 100, orderPrice));
-            engine.processNextQueueMsg();
+            engine.waitAndProcessNextMsg();
         }
 
         logger.info("\n" + engine.getQuoteFeed().getBook(sym));
