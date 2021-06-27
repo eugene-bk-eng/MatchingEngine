@@ -29,9 +29,8 @@ package com.ea.matchingengine.feed.quote;
 import com.ea.matchingengine.book.BookKey;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -44,7 +43,7 @@ import java.util.Map;
 
 public class QuoteFeedImpl extends AbstractQuoteFeed {
 
-    private static final Logger logger = LogManager.getLogger(QuoteFeedImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(QuoteFeedImpl.class);
     Map<String, Map<BookKey, QuoteMsg>> bids = Maps.newHashMap(); // sorted by price, highest on top.
     Map<String, Map<BookKey, QuoteMsg>> offers = Maps.newHashMap(); // sorted by price, lowest on top.
     private BookPrinter bookPrinter;
@@ -57,7 +56,7 @@ public class QuoteFeedImpl extends AbstractQuoteFeed {
     public void reportBookChange(FeedMsgSide bookSide, String symbol, BookKey px_level, int beforeQty, int afterQty) {
         if (afterQty == 0) {
             // delete level. cancelled or matched.
-            logger.log(Level.INFO, String.format("DELETE %s LEVEL px: %s, before: %s, after: %s", bookSide.getValue(), px_level, beforeQty, afterQty));
+            logger.info( String.format("DELETE %s LEVEL px: %s, before: %s, after: %s", bookSide.getValue(), px_level, beforeQty, afterQty));
             if (bookSide == FeedMsgSide.BID) {
                 bids.computeIfAbsent(symbol, p -> new HashMap<>()).remove(px_level);
             } else if (bookSide == FeedMsgSide.OFFER) {
@@ -65,7 +64,7 @@ public class QuoteFeedImpl extends AbstractQuoteFeed {
             }
         } else if (afterQty > 0 && afterQty < beforeQty) {
             // updating existing level, decreasing qty
-            logger.log(Level.INFO, String.format("UPDATE %s LEVEL px: %s, before: %s, after: %s", bookSide.getValue(), px_level, beforeQty, afterQty));
+            logger.info( String.format("UPDATE %s LEVEL px: %s, before: %s, after: %s", bookSide.getValue(), px_level, beforeQty, afterQty));
             QuoteMsg record = new DefaultQuoteMsg(System.nanoTime(), symbol, afterQty, px_level.getPrice());
             if (bookSide == FeedMsgSide.BID) {
                 bids.get(symbol).put(px_level, record);
@@ -74,7 +73,7 @@ public class QuoteFeedImpl extends AbstractQuoteFeed {
             }
         } else if (beforeQty > 0 && afterQty > beforeQty) {
             // updating existing level, increasing qty
-            logger.log(Level.INFO, String.format("UPDATE %s LEVEL px: %s, before: %s, after: %s", bookSide.getValue(), px_level, beforeQty, afterQty));
+            logger.info( String.format("UPDATE %s LEVEL px: %s, before: %s, after: %s", bookSide.getValue(), px_level, beforeQty, afterQty));
             QuoteMsg record = new DefaultQuoteMsg(System.nanoTime(), symbol, afterQty, px_level.getPrice());
             if (bookSide == FeedMsgSide.BID) {
                 bids.get(symbol).put(px_level, record);
@@ -83,7 +82,7 @@ public class QuoteFeedImpl extends AbstractQuoteFeed {
             }
         } else if (beforeQty == 0 && afterQty > 0) {
             // new level
-            logger.log(Level.INFO, String.format("NEW %s LEVEL px: %s, before: %s, after: %s", bookSide.getValue(), px_level, beforeQty, afterQty));
+            logger.info( String.format("NEW %s LEVEL px: %s, before: %s, after: %s", bookSide.getValue(), px_level, beforeQty, afterQty));
             QuoteMsg record = new DefaultQuoteMsg(System.nanoTime(), symbol, afterQty, px_level.getPrice());
             if (bookSide == FeedMsgSide.BID) {
                 bids.computeIfAbsent(symbol, p -> new HashMap<>()).put(px_level, record);

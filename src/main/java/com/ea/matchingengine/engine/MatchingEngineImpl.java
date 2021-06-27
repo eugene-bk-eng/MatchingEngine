@@ -19,8 +19,8 @@ import com.ea.matchingengine.fix.input.OrderImpl;
 import com.ea.matchingengine.fix.input.Request;
 import com.google.common.base.Preconditions;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,7 +37,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MatchingEngineImpl implements MatchingEngine {
 
-    private static final Logger logger = LogManager.getLogger(MatchingEngineImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(MatchingEngineImpl.class);
 
     final Map<String, Book> mapBook = new ConcurrentHashMap();
     final Map<String, BlockingQueue<Request>> mapBookOrdQueue = new ConcurrentHashMap();
@@ -59,6 +59,7 @@ public class MatchingEngineImpl implements MatchingEngine {
     @Override
     public void startMatching() {
         logger.info("startMatching");
+        logger.error("crap");
         initDispatch();
     }
 

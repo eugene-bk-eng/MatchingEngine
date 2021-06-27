@@ -6,15 +6,15 @@
 package com.ea.matchingengine;
 
 import com.ea.matchingengine.feed.trade.DefaultTradeFeedMsg;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
-public class TestMatchingEngine extends AbstractTestBase {
+public class TestMatching extends AbstractTestBase {
 
-    private static final Logger logger = LogManager.getLogger(TestMatchingEngine.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestMatching.class);
 
     @Test
     public void testQuotePlacementAndOrdering() throws InterruptedException {
@@ -57,17 +57,15 @@ public class TestMatchingEngine extends AbstractTestBase {
     }
 
     @Test
-    public void testMatchAndPost() throws InterruptedException {
+    public void testMatchPriceImprovement() throws InterruptedException {
 
         lmtBuy(SYM_IBM, 100, 15.00);
-         // post on bid
         lmtSell(SYM_IBM, 300, 10.00);
-         // match, post on ask
 
         showBook(SYM_IBM);
 
         // check quote feed
-        assertBook(SYM_IBM,  "      |200 x 10",
+        assertBook(SYM_IBM,  "     |200 x 10",
                                     "empty|");
 
         assertTrades( "ibm.n,100,12.50");
@@ -87,12 +85,12 @@ public class TestMatchingEngine extends AbstractTestBase {
 
         // check quote feed
         assertBook(SYM_IBM,  "     |200 x 10.00",
-                             "empty|");
+                                    "empty|");
         assertBook(SYM_AAPL,  "     |150 x 10.20",
-                             "empty|");
+                                     "empty|");
         // check trade feed
         assertTrades( "ibm.n,100,12.50",
-                                   "aapl.q,100,10.20");
+                               "aapl.q,100,10.20");
     }
 
     /**

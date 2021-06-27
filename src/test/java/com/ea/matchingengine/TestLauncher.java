@@ -1,6 +1,8 @@
 package com.ea.matchingengine;
 
 import com.ea.matchingengine.config.ConfigReader;
+import com.ea.matchingengine.engine.MatchingEngineImpl;
+import nl.altindag.log.LogCaptor;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -11,6 +13,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * @author : eugene
@@ -73,16 +76,18 @@ public class TestLauncher {
     }
 
     @Test
-    public void testLauncherConfig6() throws Exception {
-        //LogCaptor logCaptorMatchingEngineImpl = LogCaptor.forClass(MatchingEngineImpl.class);
+    public void testLauncherLogCaptor() throws Exception {
+        LogCaptor logCaptorMatchingEngineImpl = LogCaptor.forClass(MatchingEngineImpl.class);
         String args[]=new String[]{"--config","C:\\projects\\java\\personal\\MatchingEngine\\src\\test\\java\\com\\ea\\matchingengine\\config\\dev\\config.properties"};
-        Launcher launcher=new Launcher(args);
 
+        new Launcher(args);
+
+        Assert.assertEquals(3, logCaptorMatchingEngineImpl.getInfoLogs().size());
+        Iterator<String> t=logCaptorMatchingEngineImpl.getInfoLogs().iterator();
+        Assert.assertTrue(t.next().endsWith("startMatching"));
+        Assert.assertTrue(t.next().endsWith("initDispatch"));
+        Assert.assertTrue(t.next().endsWith("startDispatch"));
         //
-//        Iterator<String> t=logCaptorMatchingEngineImpl.getInfoLogs().iterator();
-//        Assert.assertEquals(3, logCaptorMatchingEngineImpl.getInfoLogs().size());
-//        Assert.assertTrue(t.next().endsWith("startMatching"));
-//        Assert.assertTrue(t.next().endsWith("initDispatch"));
-//        Assert.assertTrue(t.next().endsWith("startDispatch"));
+        //Assert.assertEquals( 0, LogCaptor.forRoot().getErrorLogs().size());
     }
 }

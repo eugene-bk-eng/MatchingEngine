@@ -14,11 +14,11 @@ import com.ea.matchingengine.fix.input.OrderType;
 import com.google.common.collect.Lists;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +31,7 @@ import java.util.List;
  **/
 public abstract class AbstractTestBase {
 
-    private static final Logger logger = LogManager.getLogger(TestMatchingEngine.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestMatching.class);
     public MatchingEngine engine;
     //public final List<QuoteMsg> bidBook = Lists.newArrayList(), offerBook = Lists.newArrayList();
     public final List<TradeMsg> tradesFeed = Lists.newArrayList();

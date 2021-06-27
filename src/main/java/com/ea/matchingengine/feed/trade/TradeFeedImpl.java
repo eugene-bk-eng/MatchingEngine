@@ -26,9 +26,8 @@ package com.ea.matchingengine.feed.trade;
  *
  */
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -41,12 +40,12 @@ import java.util.stream.Collectors;
 
 public class TradeFeedImpl extends AbstractTradeFeed {
 
-    private static final Logger logger = LogManager.getLogger(TradeFeedImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(TradeFeedImpl.class);
     private final List<TradeMsg> listTrades = new LinkedList<>();
 
     @Override
     public void reportTrade(String symbol, int qtyMatch, double pxMatch) {
-        logger.log(Level.INFO, String.format("MATCHED TRADE %s, qty:%s, px: %s", symbol, qtyMatch, pxMatch));
+        logger.info( String.format("MATCHED TRADE %s, qty:%s, px: %s", symbol, qtyMatch, pxMatch));
 
         // TODO: build overfill policy
         listTrades.add(new DefaultTradeFeedMsg(System.nanoTime(), symbol, qtyMatch, pxMatch));

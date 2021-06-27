@@ -4,8 +4,8 @@ import com.ea.matchingengine.config.ConfigReader;
 import com.ea.matchingengine.engine.MatchingEngine;
 import com.ea.matchingengine.util.UtilReflection;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author : eugene
@@ -17,15 +17,17 @@ import org.apache.logging.log4j.Logger;
  */
 public class Launcher {
 
-    private static final Logger logger = LogManager.getLogger(Launcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     public Launcher(String args[]) throws Exception {
 
         // read command line argument
         StartupOptions.ConfigurationProps cfg = (new StartupOptions()).parse(args);
+        logger.info("INPUT CONFIG: " + cfg);
 
         // get configuration
         Configuration configuration =(new ConfigReader()).readConfig(cfg.getConfigFile());
+        ConfigReader.print(configuration,logger);
 
         // launch
         MatchingEngine matchingEngine=UtilReflection.loadInstance(MatchingEngine.class, configuration.getString("program"), Configuration.class, configuration );

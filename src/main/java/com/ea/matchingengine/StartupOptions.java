@@ -7,8 +7,8 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.io.PrintWriter;
  **/
 public class StartupOptions {
 
-    private static final Logger logger = LogManager.getLogger(StartupOptions.class);
+    private static final Logger logger = LoggerFactory.getLogger(StartupOptions.class);
     private final CommandLineParser parser = new DefaultParser();
 
     public StartupOptions() {
@@ -69,6 +69,13 @@ public class StartupOptions {
 
         public void setConfigFile(String configFile) {
             this.configFile = configFile;
+        }
+
+        @Override
+        public String toString() {
+            return "ConfigurationProps{" +
+                    "configFile='" + configFile + '\'' +
+                    '}';
         }
     }
 }

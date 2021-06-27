@@ -13,16 +13,13 @@ https://pandao.github.io/editor.md/en.html
 
 **Table of Contents**
 
-[TOCM]
+LOGGING
 
-[TOC]
+In runtime, engine uses log4j-core
+In test configuration, because we use logging Captor library, 
+I use ch.qos.logback. The library is a little buggy but does the job.
+It's hard to configure its dependency.
 
-#H1 header
-##H2 header
-###H3 header
-####H4 header
-#####H5 header
-######H6 header
 
 ###Images
 
