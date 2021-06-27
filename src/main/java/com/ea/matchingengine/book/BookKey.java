@@ -38,4 +38,11 @@ public class BookKey implements Comparable {
     public int compareTo(Object o) {
         return Double.compare( price, ((BookKey)o).getPrice() );
     }
+
+    @Override
+    public String toString() {
+        return "BookKey{" +
+                "price=" + price +
+                '}';
+    }
 }

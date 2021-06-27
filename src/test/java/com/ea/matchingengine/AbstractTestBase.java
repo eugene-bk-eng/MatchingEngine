@@ -5,6 +5,7 @@ import com.ea.matchingengine.engine.MatchingEngineImpl;
 import com.ea.matchingengine.feed.quote.DefaultQuoteMsg;
 import com.ea.matchingengine.feed.quote.QuoteFeed;
 import com.ea.matchingengine.feed.quote.QuoteMsg;
+import com.ea.matchingengine.feed.trade.DefaultTradeFeedMsg;
 import com.ea.matchingengine.feed.trade.TradeMsg;
 import com.ea.matchingengine.fix.input.Order;
 import com.ea.matchingengine.fix.input.OrderImpl;
@@ -19,6 +20,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,10 +32,11 @@ import java.util.List;
 public abstract class AbstractTestBase {
 
     private static final Logger logger = LogManager.getLogger(TestMatchingEngine.class);
-    MatchingEngine engine;
-    public final List<QuoteMsg> bidBook = Lists.newArrayList(), offerBook = Lists.newArrayList();
+    public MatchingEngine engine;
+    //public final List<QuoteMsg> bidBook = Lists.newArrayList(), offerBook = Lists.newArrayList();
     public final List<TradeMsg> tradesFeed = Lists.newArrayList();
 
+    //
     public final String SYM_IBM="ibm.n";
     public final String SYM_AAPL="aapl.q";
 
@@ -41,9 +45,57 @@ public abstract class AbstractTestBase {
         org.apache.commons.configuration2.Configuration config=new MapConfiguration(new HashMap());
         engine = new MatchingEngineImplForTest(config);
         engine.startMatching();
-        bidBook.clear();
-        offerBook.clear();
         tradesFeed.clear();
+    }
+
+    /**
+     *
+     * @param symbol
+     * @param size
+     * @param price
+     * @throws InterruptedException
+     */
+    public void lmtBuy(String symbol, int size, double price) throws InterruptedException {
+        submitOrder(symbol,OrderType.LMT,OrderSide.BUY,size,price);
+    }
+
+    /**
+     *
+     * @param symbol
+     * @param size
+     * @param price
+     * @throws InterruptedException
+     */
+    public void lmtSell(String symbol, int size, double price) throws InterruptedException {
+        submitOrder(symbol,OrderType.LMT,OrderSide.SELL,size,price);
+    }
+
+    /**
+     * This method sends the order to matching engine(ME) AND
+     * synchronously invokes ME's process order thread.
+     * @param symbol
+     * @param type
+     * @param side
+     * @param size
+     * @param price
+     * @throws InterruptedException
+     */
+    public void submitOrder(String symbol, OrderType type, OrderSide side, int size, double price) throws InterruptedException {
+        if( type==OrderType.LMT ) {
+            if( side==OrderSide.BUY ) {
+                engine.accept(buyLimitDayOrder(symbol, size, price));
+            }
+            else if( side==OrderSide.SELL ) {
+                engine.accept(sellLimitDayOrder(symbol, size, price));
+            }else{ throw new IllegalStateException(); }
+
+            engine.waitAndProcessNextMsg();
+        }else{ throw new IllegalStateException(); }
+    }
+
+    public void sendOrder(String symbol, int size, double price) throws InterruptedException {
+        engine.accept(buyLimitDayOrder(symbol, size, price));
+        engine.waitAndProcessNextMsg();
     }
 
     /// HELPFUL METHODS
@@ -63,6 +115,86 @@ public abstract class AbstractTestBase {
         return new DefaultQuoteMsg(System.nanoTime(), sym, qty, px);
     }
 
+    void assertBookBidEmptyAskNotEmpty(String sym, String askSize_s, String askPx_s) {
+        int askSize[]= Arrays.stream(askSize_s.split("[\\s,]+")).mapToInt(s->Integer.parseInt(s)).toArray();
+        double askPx[]= Arrays.stream(askPx_s.split("[\\s,]+")).mapToDouble(s->Double.parseDouble(s)).toArray();
+        assertBook(sym,null,null,askSize,askPx);
+    }
+
+    void assertBookBidNotEmptyAskEmpty(String sym, String bidSize_s, String bidPx_s) {
+        int bidSize[]= Arrays.stream(bidSize_s.split("[\\s,]+")).mapToInt(s->Integer.parseInt(s)).toArray();
+        double bidPx[]= Arrays.stream(bidPx_s.split("[\\s,]+")).mapToDouble(s->Double.parseDouble(s)).toArray();
+        assertBook(sym,bidSize,bidPx,null,null);
+    }
+
+    void assertBookBidAskEmpty(String sym) {
+        assertBook(sym,null,new double[]{},null,new double[]{});
+    }
+
+    /**
+     * Yet another format
+     * @param sym
+     * @param entries
+     */
+    void assertBook(String sym, String... entries) {
+        List<QuoteMsg> expectedBidBook=Lists.newArrayList();
+        List<QuoteMsg> expectedAskBook=Lists.newArrayList();
+        for (String e: entries) {
+            if( e.strip().endsWith("|") ) {
+                // BID side
+                if( !e.strip().toLowerCase().contains("empty")) {
+                    QuoteMsg quote = parse(sym, e.strip().replace("|", ""));
+                    expectedBidBook.add(quote);
+                }
+            } else if( e.strip().startsWith("|") ) {
+                // OFFER side
+                if( !e.strip().toLowerCase().contains("empty")) {
+                    QuoteMsg quote = parse(sym, e.strip().replace("|", ""));
+                    expectedAskBook.add(quote);
+                }
+            }else{ throw new IllegalArgumentException(); }
+        }
+        //
+        Collections.reverse(expectedAskBook);
+        assertBook(expectedBidBook, getQuoteFeed().getBids(sym));
+        assertBook(expectedAskBook, getQuoteFeed().getOffers(sym));
+    }
+
+    QuoteMsg parse(String sym,String entry){
+        QuoteMsg quote=null;
+        int pos=entry.indexOf("x");
+        Assert.assertTrue(pos>0); // check correct format
+        int qty = Integer.parseInt(entry.substring(0,pos).strip());
+        double px = Double.parseDouble(entry.substring(pos+1).strip());
+        return new DefaultQuoteMsg(0,sym,qty,px);
+    }
+
+    // convieniece method.. java syntax is annoyingly verbose
+    void assertBook(String sym, String bidSize_s, String bidPx_s, String askSize_s, String askPx_s) {
+        int bidSize[]= Arrays.stream(bidSize_s.split("[\\s,]+")).mapToInt(s->Integer.parseInt(s)).toArray();
+        double bidPx[]= Arrays.stream(bidPx_s.split("[\\s,]+")).mapToDouble(s->Double.parseDouble(s)).toArray();
+        int askSize[]= Arrays.stream(askSize_s.split("[\\s,]+")).mapToInt(s->Integer.parseInt(s)).toArray();
+        double askPx[]= Arrays.stream(askPx_s.split("[\\s,]+")).mapToDouble(s->Double.parseDouble(s)).toArray();
+        assertBook(sym,bidSize,bidPx,askSize,askPx);
+    }
+
+    void assertBook(String sym, int bidSize[], double bidPx[], int askSize[], double askPx[]) {
+        if( bidSize==null || bidSize.length==0 ) {
+            Assert.assertEquals( 0, getQuoteFeed().getBids(sym).size() ); // empty book
+        }else{
+            List<QuoteMsg> expectedBook=Lists.newArrayList();
+            for (int i = 0; i < bidSize.length; i++) { expectedBook.add(makeQuote(sym, bidSize[i], bidPx[i]));  }
+            assertBook(expectedBook, getQuoteFeed().getBids(sym));
+        }
+        if( askSize==null || askPx.length==0 ) {
+            Assert.assertEquals( 0, getQuoteFeed().getOffers(sym).size() ); // empty book
+        }else{
+            List<QuoteMsg> expectedBook=Lists.newArrayList();
+            for (int i = 0; i < askSize.length; i++) { expectedBook.add(makeQuote(sym, askSize[i], askPx[i]));  }
+            assertBook(expectedBook, getQuoteFeed().getOffers(sym));
+        }
+    }
+
     void assertBidBook(String sym, List<QuoteMsg> expectedRecords) {
         assertBook(expectedRecords, getQuoteFeed().getBids(sym));
     }
@@ -78,7 +210,23 @@ public abstract class AbstractTestBase {
         }
     }
 
-    void assertBookTrades(List<TradeMsg> expectedRecords, List<TradeMsg> actualRecords) {
+    /**
+     *
+     * @param expected
+     */
+    void assertTrades(String... expected) {
+        List<TradeMsg> expectedTrades=Lists.newArrayList();
+        for (String s:expected) {
+            String parts[]=s.strip().split("[\\s,]+");
+            String sym=parts[0];
+            int tradeQty=Integer.parseInt(parts[1]);
+            Double tradePx=Double.parseDouble(parts[2]);
+            expectedTrades.add(new DefaultTradeFeedMsg(0, sym, tradeQty, tradePx));
+        }
+        assertTrades(expectedTrades,getTradeFeedMsgs());
+    }
+
+    void assertTrades(List<TradeMsg> expectedRecords, List<TradeMsg> actualRecords) {
         Assert.assertEquals(expectedRecords.size(), actualRecords.size());
         for (int i = 0; i < expectedRecords.size(); i++) {
             TradeMsg a = expectedRecords.get(i);

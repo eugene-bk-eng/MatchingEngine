@@ -1,8 +1,6 @@
 package com.ea.matchingengine;
 
 import com.ea.matchingengine.config.ConfigReader;
-import com.ea.matchingengine.engine.MatchingEngineImpl;
-import nl.altindag.log.LogCaptor;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -13,7 +11,6 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * @author : eugene

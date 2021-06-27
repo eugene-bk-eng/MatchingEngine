@@ -6,7 +6,6 @@
 package com.ea.matchingengine;
 
 import com.ea.matchingengine.feed.trade.DefaultTradeFeedMsg;
-import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -20,107 +19,80 @@ public class TestMatchingEngine extends AbstractTestBase {
     @Test
     public void testQuotePlacementAndOrdering() throws InterruptedException {
 
-        engine.accept(buyLimitDayOrder(SYM_IBM, 300, 10.20));
-        engine.waitAndProcessNextMsg();
-        engine.accept(buyLimitDayOrder(SYM_IBM, 100, 10.50));
-        engine.waitAndProcessNextMsg();
-        engine.accept(buyLimitDayOrder(SYM_IBM, 200, 10.30));
-        engine.waitAndProcessNextMsg();
-        // add another order on that level
-        engine.accept(buyLimitDayOrder(SYM_IBM, 300, 10.50));
-        engine.waitAndProcessNextMsg();
+        lmtBuy(SYM_IBM, 300, 10.20);
+        lmtBuy(SYM_IBM, 100, 10.50);
+        lmtBuy(SYM_IBM, 200, 10.30);
+        lmtBuy(SYM_IBM, 300, 10.50); // 2nd order on level
 
-        engine.accept(sellLimitDayOrder(SYM_IBM, 100, 15.00));
-        engine.waitAndProcessNextMsg();
-        engine.accept(sellLimitDayOrder(SYM_IBM, 200, 15.10));
-        engine.waitAndProcessNextMsg();
+        lmtSell(SYM_IBM, 100, 15.00);
+        lmtSell(SYM_IBM, 200, 15.10);
 
         showBook(SYM_IBM);
 
-        // construct expected book and verify
         // highest bid price to clients is on top.
         // this is the best price exch willing to buy at, followed by next best
-        bidBook.add(makeQuote(SYM_IBM, 400, 10.50));
-        bidBook.add(makeQuote(SYM_IBM, 200, 10.30));
-        bidBook.add(makeQuote(SYM_IBM, 300, 10.20));
-        assertBidBook(SYM_IBM, bidBook);
 
         // lowest offer price to clients is on top
         // this is the best (lowest) price exch willing to sell at, followed by next best (slightly higher)
-        offerBook.add(makeQuote(SYM_IBM, 100, 15.0));
-        offerBook.add(makeQuote(SYM_IBM, 200, 15.1));
-        assertOfferBook(SYM_IBM, offerBook);
+        assertBook(SYM_IBM,  "           |200 x 15.1",
+                                    "           |100 x 15.0",
+                                    "400 x 10.5 |          ",
+                                    "200 x 10.3 |          ",
+                                    "300 x 10.2 |          ");
     }
 
     @Test
     public void testSimpleMatch() throws InterruptedException {
 
-        engine.accept(buyLimitDayOrder(SYM_IBM, 100, 10.50));
-        engine.waitAndProcessNextMsg();
-
-        assertBidBook(SYM_IBM, Lists.newArrayList(makeQuote(SYM_IBM, 100, 10.50)));
-        assertOfferBook(SYM_IBM, Lists.newArrayList());
-
-        engine.accept(sellLimitDayOrder(SYM_IBM, 100, 10.50));
-        engine.waitAndProcessNextMsg();
+        lmtBuy(SYM_IBM, 100, 10.50);
+        lmtSell(SYM_IBM, 100, 10.50);
 
         showBook(SYM_IBM);
 
         // check both sides are empty again
-        assertBidBook(SYM_IBM, Lists.newArrayList());
-        assertOfferBook(SYM_IBM, Lists.newArrayList());
+        assertBookBidAskEmpty(SYM_IBM);
 
         // check trade has occurred
-        tradesFeed.add(new DefaultTradeFeedMsg(System.nanoTime(),SYM_IBM, 100, 10.50));
-        assertBookTrades(tradesFeed, getTradeFeedMsgs(SYM_IBM));
+        assertTrades( "ibm.n,100,10.50");
     }
 
     @Test
     public void testMatchAndPost() throws InterruptedException {
 
-        engine.accept(buyLimitDayOrder(SYM_IBM, 100, 15.00));
-        engine.waitAndProcessNextMsg(); // post on bid
-        engine.accept(sellLimitDayOrder(SYM_IBM, 300, 10.00));
-        engine.waitAndProcessNextMsg(); // match, post on ask
+        lmtBuy(SYM_IBM, 100, 15.00);
+         // post on bid
+        lmtSell(SYM_IBM, 300, 10.00);
+         // match, post on ask
 
         showBook(SYM_IBM);
 
         // check quote feed
-        assertBidBook(SYM_IBM, Lists.newArrayList());
-        assertOfferBook(SYM_IBM, Lists.newArrayList(makeQuote(SYM_IBM, 200, 10.00)));
-        // check trade feed
-        tradesFeed.add(new DefaultTradeFeedMsg(System.nanoTime(), SYM_IBM, 100, 12.50)); // price is improved for both
-        assertBookTrades(tradesFeed, getTradeFeedMsgs(SYM_IBM));
+        assertBook(SYM_IBM,  "      |200 x 10",
+                                    "empty|");
+
+        assertTrades( "ibm.n,100,12.50");
     }
 
     @Test
     public void testMatchAndPostTwoSymbols() throws InterruptedException {
 
-        engine.accept(buyLimitDayOrder(SYM_IBM, 100, 15.00));
-        engine.waitAndProcessNextMsg(); // post on bid
-        engine.accept(sellLimitDayOrder(SYM_IBM, 300, 10.00));
-        engine.waitAndProcessNextMsg(); // match, post on ask
+        lmtBuy(SYM_IBM, 100, 15.00);
+        lmtSell(SYM_IBM, 300, 10.00);
 
-        engine.accept(sellLimitDayOrder(SYM_AAPL, 250, 10.20));
-        engine.waitAndProcessNextMsg();
-        engine.accept(buyLimitDayOrder(SYM_AAPL, 100, 10.20));
-        engine.waitAndProcessNextMsg();
+        lmtSell(SYM_AAPL, 250, 10.20);
+        lmtBuy(SYM_AAPL, 100, 10.20);
 
         showBook(SYM_IBM);
-
         showBook(SYM_AAPL);
 
         // check quote feed
-        assertBidBook(SYM_IBM, Lists.newArrayList());
-        assertOfferBook(SYM_IBM, Lists.newArrayList(makeQuote(SYM_IBM, 200, 10.00)));
-        //
-        assertOfferBook(SYM_IBM, Lists.newArrayList(makeQuote(SYM_IBM, 200, 10.00)));
-        //
-        assertOfferBook(SYM_AAPL, Lists.newArrayList(makeQuote(SYM_AAPL, 150, 10.20)));
+        assertBook(SYM_IBM,  "     |200 x 10.00",
+                             "empty|");
+        assertBook(SYM_AAPL,  "     |150 x 10.20",
+                             "empty|");
         // check trade feed
-        tradesFeed.add(new DefaultTradeFeedMsg(System.nanoTime(), SYM_IBM, 100, 12.50)); // price is improved for both
-        tradesFeed.add(new DefaultTradeFeedMsg(System.nanoTime(), SYM_AAPL, 100, 10.20)); // price is improved for both
-        assertBookTrades(tradesFeed, getTradeFeedMsgs());
+        assertTrades( "ibm.n,100,12.50",
+                                   "aapl.q,100,10.20");
     }
 
     /**
@@ -139,21 +111,15 @@ public class TestMatchingEngine extends AbstractTestBase {
 
         String sym = "ibm.n";
 
-        engine.accept(buyLimitDayOrder(SYM_IBM, 100, 10.5055667));
-        engine.waitAndProcessNextMsg();
-        engine.accept(sellLimitDayOrder(SYM_IBM, 100, 11.789));
-        engine.waitAndProcessNextMsg();
+        lmtBuy(SYM_IBM, 100, 10.5055667); // decimal price
+        lmtSell(SYM_IBM, 100, 11.789); // decimal price
 
         showBook(sym);
 
         // construct expected book and verify
         // highest bid price to clients is on top
-        bidBook.add(makeQuote(SYM_IBM, 100, 10.51));
-        assertBidBook(SYM_IBM, bidBook);
-
-        // lowest offer price to clients is on top
-        offerBook.add(makeQuote(SYM_IBM, 100, 11.79));
-        assertOfferBook(SYM_IBM, offerBook);
+        assertBook(SYM_IBM,"100","10.51",
+                                "100", "11.79");
 
         showBook(sym);
     }
@@ -164,47 +130,45 @@ public class TestMatchingEngine extends AbstractTestBase {
      * @throws InterruptedException
      */
     @Test
-    public void testLoop() throws InterruptedException {
+    public void testWaveOfBuyFollowedBySellOrders() throws InterruptedException {
 
         String sym = "ibm.n";
 
-        int n = 1200;
+        int orders_n = 1200;
         double initialPrice = 1.00;
         double delta = 0.01;
         double lastPrice = 0;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < orders_n; i++) {
             double orderPrice = initialPrice + i * delta;
             lastPrice = orderPrice;
-            engine.accept(buyLimitDayOrder(SYM_IBM, 100, orderPrice));
-            engine.waitAndProcessNextMsg();
+            lmtBuy(SYM_IBM, 100, orderPrice);
+            
         }
         // sells go in the opposite direction, starting from the highest bid
         // bid is how much you are willing to pay for something
         int bla = 0;
         initialPrice = lastPrice;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < orders_n; i++) {
             double orderPrice = initialPrice - i * delta;
-            lastPrice = orderPrice;
-            engine.accept(sellLimitDayOrder(SYM_IBM, 100, orderPrice));
-            engine.waitAndProcessNextMsg();
+            lmtSell(SYM_IBM, 100, orderPrice);
+            
         }
 
         logger.info("\n" + engine.getQuoteFeed().getBook(sym));
 
         // book must be empty
-        assertBidBook(SYM_IBM, bidBook);
-        assertOfferBook(SYM_IBM, offerBook);
+        assertBookBidAskEmpty(SYM_IBM);
 
         // check trade feed
         initialPrice = 1.00;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < orders_n; i++) {
             double matchPx = initialPrice + i * delta;
             tradesFeed.add(new DefaultTradeFeedMsg(System.nanoTime(), SYM_IBM, 100, matchPx)); // price is improved for both
         }
         // reverse the trades since they were matched from highest to lower price.
         Collections.reverse(tradesFeed);
         // check trade feed
-        assertBookTrades(tradesFeed, getTradeFeedMsgs(sym));
+        assertTrades(tradesFeed, getTradeFeedMsgs(sym));
     }
 
 }

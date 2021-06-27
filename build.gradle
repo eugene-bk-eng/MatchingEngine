@@ -41,18 +41,9 @@ configurations.all {
 // https://github.com/Hakky54/log-captor#using-log-captor-alongside-with-other-logging-libraries
 configurations {
     testImplementation {
-        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+        exclude module: 'log4j-slf4j-impl'
         exclude module: 'log4j-slf4j18-impl'
     }
-    testRuntime{
-        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-        exclude module: 'log4j-slf4j18-impl'
-    }
-    testRuntimeClasspath{
-        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-        exclude module: 'log4j-slf4j18-impl'
-    }
-    //org.apache.logging.log4j:log4j-slf4j-impl
 }
 
 dependencies {
