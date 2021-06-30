@@ -26,8 +26,9 @@ package com.ea.matchingengine.feed.trade;
  *
  */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.ea.matchingengine.LoggerNames;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 
 public class TradeFeedImpl extends AbstractTradeFeed {
 
-    private static final Logger logger = LoggerFactory.getLogger(TradeFeedImpl.class);
+    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
     private final List<TradeMsg> listTrades = new LinkedList<>();
 
     @Override

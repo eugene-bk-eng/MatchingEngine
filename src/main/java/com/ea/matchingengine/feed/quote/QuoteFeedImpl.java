@@ -26,11 +26,12 @@ package com.ea.matchingengine.feed.quote;
  *
  */
 
+import com.ea.matchingengine.LoggerNames;
 import com.ea.matchingengine.book.BookKey;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ import java.util.Map;
 
 public class QuoteFeedImpl extends AbstractQuoteFeed {
 
-    private static final Logger logger = LoggerFactory.getLogger(QuoteFeedImpl.class);
+    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
     Map<String, Map<BookKey, QuoteMsg>> bids = Maps.newHashMap(); // sorted by price, highest on top.
     Map<String, Map<BookKey, QuoteMsg>> offers = Maps.newHashMap(); // sorted by price, lowest on top.
     private BookPrinter bookPrinter;

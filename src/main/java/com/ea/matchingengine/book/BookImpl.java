@@ -201,7 +201,45 @@ public class BookImpl extends AbstractBook {
 
     @Override
     public void match(Cancel cancel) {
-        throw new UnsupportedOperationException();
+        // TODO: create quick map lookup. this is a dumb linear implementation
+
+        // look in bids
+        for( Map.Entry<BookKey,List<Order>> e: bidMap.entrySet()) {
+            BookKey key=e.getKey();
+            Iterator<Order> t=e.getValue().iterator();
+            while( t.hasNext() ) {
+                Order order=t.next();
+                if( order.getId().equals(cancel.getId())) {
+                    // cancel this level, update market feed
+                    int beforeQty = bidMap.get(key).stream().mapToInt(s -> s.getOpenQty()).sum();
+                    int afterQty  = beforeQty - order.getOpenQty();
+                    quoteFeed.reportBookChange(FeedMsgSide.BID, order.getSym(), key, beforeQty, afterQty);
+                    // remove order
+                    t.remove();
+                    // out
+                    break;
+                }
+            }
+        }
+
+        for( Map.Entry<BookKey,List<Order>> e: askMap.entrySet()) {
+            BookKey key=e.getKey();
+            Iterator<Order> t=e.getValue().iterator();
+            while( t.hasNext() ) {
+                Order order=t.next();
+                if( order.getId().equals(cancel.getId())) {
+                    // cancel this level, update market feed
+                    int beforeQty = askMap.get(key).stream().mapToInt(s -> s.getOpenQty()).sum();
+                    int afterQty  = beforeQty - order.getOpenQty();
+                    quoteFeed.reportBookChange(FeedMsgSide.OFFER, order.getSym(), key, beforeQty, afterQty);
+                    // remove order
+                    t.remove();
+                    // out
+                    break;
+                }
+            }
+        }
+
     }
 
     @Override

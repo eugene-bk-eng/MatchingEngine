@@ -4,8 +4,13 @@ import com.ea.matchingengine.config.ConfigReader;
 import com.ea.matchingengine.engine.MatchingEngine;
 import com.ea.matchingengine.util.UtilReflection;
 import org.apache.commons.configuration2.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.lang.management.ManagementFactory;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.TimeZone;
 
 /**
  * @author : eugene
@@ -17,9 +22,12 @@ import org.slf4j.LoggerFactory;
  */
 public class Launcher {
 
-    private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
+    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
 
     public Launcher(String args[]) throws Exception {
+
+        logger.info("APP STARTED");
+        printProcessInfo();
 
         // read command line argument
         StartupOptions.ConfigurationProps cfg = (new StartupOptions()).parse(args);
@@ -32,6 +40,17 @@ public class Launcher {
         // launch
         MatchingEngine matchingEngine=UtilReflection.loadInstance(MatchingEngine.class, configuration.getString("program"), Configuration.class, configuration );
         matchingEngine.startMatching();
+    }
+
+    public void printProcessInfo() {
+        logger.info(String.format("PID: %s", ManagementFactory.getRuntimeMXBean().getPid()));
+        logger.info(String.format("TIME ZONE: %s", TimeZone.getDefault().getDisplayName() ));
+        logger.info(String.format("JVM Name: %s", ManagementFactory.getRuntimeMXBean().getName()));
+        logger.info(String.format("JVM Spec: %s", ManagementFactory.getRuntimeMXBean().getSpecName()));
+        logger.info(String.format("JVM VERSION: %s", ManagementFactory.getRuntimeMXBean().getSpecVersion()));
+        logger.info(String.format("MANAGEMENT SPEC VERSION: %s", ManagementFactory.getRuntimeMXBean().getManagementSpecVersion()));
+        logger.info(String.format("VENDOR: %s", ManagementFactory.getRuntimeMXBean().getSpecVendor()));
+        logger.info(String.format("START TIME: %s", Instant.ofEpochMilli(ManagementFactory.getRuntimeMXBean().getStartTime()).atZone(ZoneId.systemDefault()).toLocalDateTime()));
     }
 
     public static void main(String[] args) {

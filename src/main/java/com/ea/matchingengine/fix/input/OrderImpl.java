@@ -21,6 +21,14 @@ public class OrderImpl extends RequestBase implements Order {
         this.price = price;
     }
 
+    public OrderImpl(String orderId, String symbol, OrderType type, OrderSide side, int size, double price) {
+        super(orderId, symbol, MsgType.ORDER);
+        this.type = type;
+        this.side = side;
+        this.openQty = this.size = size;
+        this.price = price;
+    }
+
     @Override
     public OrderType getType() {
         return type;

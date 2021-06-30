@@ -6,18 +6,23 @@
 package com.ea.matchingengine;
 
 import com.ea.matchingengine.feed.trade.DefaultTradeFeedMsg;
+import com.ea.matchingengine.fix.input.Order;
+import com.ea.matchingengine.testutils.TestLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
 public class TestMatching extends AbstractTestBase {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestMatching.class);
+    private final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
 
     @Test
     public void testQuotePlacementAndOrdering() throws InterruptedException {
+
+        logger.info("testQuotePlacementAndOrdering");
 
         lmtBuy(SYM_IBM, 300, 10.20);
         lmtBuy(SYM_IBM, 100, 10.50);
@@ -39,10 +44,16 @@ public class TestMatching extends AbstractTestBase {
                                     "400 x 10.5 |          ",
                                     "200 x 10.3 |          ",
                                     "300 x 10.2 |          ");
+
+        String logLines[]=TestLogger.getAppLogLines();
+        int bl=0;
+        //Assert.assertTrue(logLines.length>1);
     }
 
     @Test
     public void testSimpleMatch() throws InterruptedException {
+
+        logger.info("testSimpleMatch");
 
         lmtBuy(SYM_IBM, 100, 10.50);
         lmtSell(SYM_IBM, 100, 10.50);
@@ -54,6 +65,9 @@ public class TestMatching extends AbstractTestBase {
 
         // check trade has occurred
         assertTrades( "ibm.n,100,10.50");
+
+        String logLines[]=TestLogger.getAppLogLines();
+        Assert.assertTrue(logLines.length>1);
     }
 
     @Test
@@ -167,6 +181,43 @@ public class TestMatching extends AbstractTestBase {
         Collections.reverse(tradesFeed);
         // check trade feed
         assertTrades(tradesFeed, getTradeFeedMsgs(sym));
+    }
+
+    @Test
+    public void testSimpleMatchCancelRemaining() throws InterruptedException {
+
+        logger.info("testSimpleMatchCancelRemaining");
+
+        lmtBuy(SYM_IBM, 100, 10.50);
+        Order sellOrder1=lmtSell(SYM_IBM, 250, 10.50);
+        Order sellOrder2=lmtSell(SYM_IBM, 300, 10.50);
+        Order sellOrder3=lmtSell(SYM_IBM, 200, 10.70);
+
+        showBook(SYM_IBM);
+
+        assertBook(SYM_IBM,     "     |200 x 10.70",
+                                       "     |450 x 10.50",
+                                       "empty|");
+
+        cancelOrder(sellOrder1);
+
+        assertBook(SYM_IBM,     "     |200 x 10.70",
+                                        "     |300 x 10.50",
+                                        "empty|");
+
+        cancelOrder(sellOrder2);
+
+        assertBook(SYM_IBM, "     |200 x 10.70",
+                                        "empty|");
+        cancelOrder(sellOrder3);
+
+        assertBookBidAskEmpty(SYM_IBM);
+
+        // check trade has occurred
+        assertTrades( "ibm.n,100,10.50");
+
+        String logLines[]=TestLogger.getAppLogLines();
+        Assert.assertTrue(logLines.length>1);
     }
 
 }

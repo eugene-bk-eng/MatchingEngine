@@ -4,12 +4,14 @@
  **/
 package com.ea.matchingengine.fix.input;
 
+import java.util.UUID;
+
 public class CancelImpl extends RequestBase implements Cancel {
-    MsgType msgType;
-    String orderId;
-    String symbol;
+
+    final String cancelId;
 
     public CancelImpl(String orderId, String symbol) {
         super(orderId, symbol, MsgType.CANCEL);
+        this.cancelId=UUID.randomUUID().toString();
     }
 }

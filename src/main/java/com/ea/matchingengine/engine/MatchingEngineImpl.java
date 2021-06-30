@@ -5,6 +5,7 @@
 
 package com.ea.matchingengine.engine;
 
+import com.ea.matchingengine.LoggerNames;
 import com.ea.matchingengine.book.Book;
 import com.ea.matchingengine.book.BookImpl;
 import com.ea.matchingengine.feed.quote.QuoteFeed;
@@ -19,8 +20,8 @@ import com.ea.matchingengine.fix.input.OrderImpl;
 import com.ea.matchingengine.fix.input.Request;
 import com.google.common.base.Preconditions;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,7 +38,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MatchingEngineImpl implements MatchingEngine {
 
-    private static final Logger logger = LoggerFactory.getLogger(MatchingEngineImpl.class);
+    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
+    private static final Logger loggerTrade = LogManager.getLogger(LoggerNames.getTradeLoggerName());
 
     final Map<String, Book> mapBook = new ConcurrentHashMap();
     final Map<String, BlockingQueue<Request>> mapBookOrdQueue = new ConcurrentHashMap();
@@ -59,7 +61,6 @@ public class MatchingEngineImpl implements MatchingEngine {
     @Override
     public void startMatching() {
         logger.info("startMatching");
-        logger.error("crap");
         initDispatch();
     }
 
@@ -146,6 +147,7 @@ public class MatchingEngineImpl implements MatchingEngine {
             double roundedPrice = BigDecimal.valueOf(order.getPrice()).setScale(
                     2, RoundingMode.HALF_UP).doubleValue();
             Order newOrder=new OrderImpl(
+                    order.getId(),
                     order.getSym(),order.getType(),
                     order.getSide(), order.getSize(), roundedPrice);
             return newOrder;

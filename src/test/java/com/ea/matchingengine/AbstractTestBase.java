@@ -7,18 +7,21 @@ import com.ea.matchingengine.feed.quote.QuoteFeed;
 import com.ea.matchingengine.feed.quote.QuoteMsg;
 import com.ea.matchingengine.feed.trade.DefaultTradeFeedMsg;
 import com.ea.matchingengine.feed.trade.TradeMsg;
+import com.ea.matchingengine.fix.input.Cancel;
+import com.ea.matchingengine.fix.input.CancelImpl;
 import com.ea.matchingengine.fix.input.Order;
 import com.ea.matchingengine.fix.input.OrderImpl;
 import com.ea.matchingengine.fix.input.OrderSide;
 import com.ea.matchingengine.fix.input.OrderType;
+import com.ea.matchingengine.testutils.TestLogger;
 import com.google.common.collect.Lists;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +34,9 @@ import java.util.List;
  **/
 public abstract class AbstractTestBase {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestMatching.class);
+    private TestLogger appender;
+
+    private final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
     public MatchingEngine engine;
     //public final List<QuoteMsg> bidBook = Lists.newArrayList(), offerBook = Lists.newArrayList();
     public final List<TradeMsg> tradesFeed = Lists.newArrayList();
@@ -42,21 +47,24 @@ public abstract class AbstractTestBase {
 
     @Before
     public void setup() {
+        TestLogger.createCustomLoggers();
         org.apache.commons.configuration2.Configuration config=new MapConfiguration(new HashMap());
         engine = new MatchingEngineImplForTest(config);
         engine.startMatching();
         tradesFeed.clear();
     }
 
-    /**
-     *
-     * @param symbol
-     * @param size
-     * @param price
-     * @throws InterruptedException
-     */
-    public void lmtBuy(String symbol, int size, double price) throws InterruptedException {
-        submitOrder(symbol,OrderType.LMT,OrderSide.BUY,size,price);
+    @After
+    public void tearDown() {
+        engine.shutdown();
+        engine = null;
+        TestLogger.destroyCustomLoggers();
+    }
+
+    public void cancelOrder(Order order) throws InterruptedException {
+        Cancel cancel=new CancelImpl(order.getId(),order.getSym());
+        engine.accept(cancel);
+        engine.waitAndProcessNextMsg();
     }
 
     /**
@@ -66,8 +74,19 @@ public abstract class AbstractTestBase {
      * @param price
      * @throws InterruptedException
      */
-    public void lmtSell(String symbol, int size, double price) throws InterruptedException {
-        submitOrder(symbol,OrderType.LMT,OrderSide.SELL,size,price);
+    public Order lmtBuy(String symbol, int size, double price) throws InterruptedException {
+        return submitOrder(symbol,OrderType.LMT,OrderSide.BUY,size,price);
+    }
+
+    /**
+     *
+     * @param symbol
+     * @param size
+     * @param price
+     * @throws InterruptedException
+     */
+    public Order lmtSell(String symbol, int size, double price) throws InterruptedException {
+        return submitOrder(symbol,OrderType.LMT,OrderSide.SELL,size,price);
     }
 
     /**
@@ -80,22 +99,28 @@ public abstract class AbstractTestBase {
      * @param price
      * @throws InterruptedException
      */
-    public void submitOrder(String symbol, OrderType type, OrderSide side, int size, double price) throws InterruptedException {
+    public Order submitOrder(String symbol, OrderType type, OrderSide side, int size, double price) throws InterruptedException {
+        Order order=null;
         if( type==OrderType.LMT ) {
             if( side==OrderSide.BUY ) {
-                engine.accept(buyLimitDayOrder(symbol, size, price));
+                order=buyLimitDayOrder(symbol, size, price);
+                engine.accept(order);
             }
             else if( side==OrderSide.SELL ) {
-                engine.accept(sellLimitDayOrder(symbol, size, price));
+                order=sellLimitDayOrder(symbol, size, price);
+                engine.accept(order);
             }else{ throw new IllegalStateException(); }
 
             engine.waitAndProcessNextMsg();
         }else{ throw new IllegalStateException(); }
+        return order;
     }
 
-    public void sendOrder(String symbol, int size, double price) throws InterruptedException {
-        engine.accept(buyLimitDayOrder(symbol, size, price));
+    public Order sendOrder(String symbol, int size, double price) throws InterruptedException {
+        Order order=buyLimitDayOrder(symbol, size, price);
+        engine.accept(order);
         engine.waitAndProcessNextMsg();
+        return order;
     }
 
     /// HELPFUL METHODS
@@ -249,12 +274,6 @@ public abstract class AbstractTestBase {
 
     public void showBook(String symbol) {
         logger.info("\n" + engine.getQuoteFeed().getBook(symbol));
-    }
-
-    @After
-    public void tearDown() {
-        engine.shutdown();
-        engine = null;
     }
 
     public class MatchingEngineImplForTest extends MatchingEngineImpl {

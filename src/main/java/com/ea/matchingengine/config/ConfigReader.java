@@ -3,7 +3,7 @@ package com.ea.matchingengine.config;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.net.MalformedURLException;

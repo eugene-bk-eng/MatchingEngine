@@ -1,0 +1,35 @@
+Various project notes
+
+LOG4J2 vs LOG4J
+https://stackoverflow.com/questions/6358836/log4j-how-to-configure-simplest-possible-file-logging
+https://stackoverflow.com/questions/30019585/log4j2-why-would-you-use-it-over-log4j
+https://stackoverflow.com/questions/47272365/how-to-overwrite-log-file-name-in-specified-in-log4j2-xml-with-new-one
+https://stackoverflow.com/questions/35573883/how-to-use-log4j2-with-different-log-files
+https://logging.apache.org/log4j/2.x/manual/async.html
+https://www.dontpanicblog.co.uk/2018/04/29/test-log4j2-with-junit/
+
+Different, simplier idea
+https://stackoverflow.com/questions/45771959/how-to-configure-writerappender-in-log4j2-xml
+
+
+--------------------------------------
+---EXCH BID: buys from client | EXCH OFFER: sells to client
+                                100 x 10.15
+                                300 x 10.12
+                                100 x 10.09
+100 x 10.05
+300 x 10.02
+200 x 9.80
+
+  you sell at BID            | you buy at OFFER
+
+Highest exchange BID is on top = best price exch willing
+to pay for your stock
+
+Lowest exchange OFFER is on top = best(lowest) price
+exch is willing to sell its stock for.
+
+In other words book prices are sorted with respect to what
+is best for the client who either
+BUYS = spends money and get exch stock
+SELLS = gets money for his stock.
