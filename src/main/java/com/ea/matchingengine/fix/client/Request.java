@@ -2,15 +2,15 @@
  * @author : eugene
  * @created : 6/18/2021, Friday
  **/
-package com.ea.matchingengine.fix.input;
+package com.ea.matchingengine.fix.client;
 
 public interface Request {
+
     MsgType getMsgType();
 
     String getSym();
 
-    String getId();
+    String getOrderId();
 
-    void setTimestampRcvd(long value);
-    long getTimestampRcvd();
+    String getClientId();
 }

@@ -14,7 +14,7 @@ public class DefaultQuoteMsg implements QuoteMsg {
     final long regularTime;
 
     public DefaultQuoteMsg(long timestamp_rcvd, String symbol, int qty, double price) {
-        this.timestamp_rcvd=timestamp_rcvd;
+        this.timestamp_rcvd = timestamp_rcvd;
         this.regularTime = System.currentTimeMillis();
         this.symbol = symbol;
         this.qty = qty;
@@ -27,10 +27,14 @@ public class DefaultQuoteMsg implements QuoteMsg {
     }
 
     @Override
-    public long getTime() { return regularTime;  }
+    public long getTime() {
+        return regularTime;
+    }
 
     @Override
-    public long getHighResTime() { return timestamp_rcvd; }
+    public long getHighResTime() {
+        return timestamp_rcvd;
+    }
 
     @Override
     public double getPrice() {

@@ -39,7 +39,7 @@ public class BookPrinter {
             BookKey px = noffers.get(i);
             QuoteMsg record = offers.get(symbol).get(px);
             LocalTime localTime = Instant.ofEpochMilli(record.getTime()).atZone(ZoneId.systemDefault()).toLocalTime();
-            sb.append(leftPad(rightPad(localTime.toString(), 12) + " " +  rightPad(Integer.toString(record.getSize()), 4) + " x " + rightPad(Double.toString(record.getPrice()), 4), 25));
+            sb.append(leftPad(rightPad(localTime.toString(), 12) + " " + rightPad(Integer.toString(record.getSize()), 4) + " x " + rightPad(Double.toString(record.getPrice()), 4), 25));
             sb.append("\n");
         }
         for (int i = 0; i < nbids.size(); i++) {

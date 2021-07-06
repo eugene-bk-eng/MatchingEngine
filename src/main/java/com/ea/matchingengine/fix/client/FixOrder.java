@@ -2,14 +2,14 @@
  * @author : eugene
  * @created : 6/18/2021, Friday
  **/
-package com.ea.matchingengine.fix.input;
+package com.ea.matchingengine.fix.client;
 
 /**
  * This is not a FIX order.
  * It is an order put on a book,
  * original and currently open quantity.
  */
-public interface Order extends Request {
+public interface FixOrder extends Request {
 
     OrderType getType();
 
@@ -17,9 +17,5 @@ public interface Order extends Request {
 
     double getPrice();
 
-    int getSize(); // original qty
-
-    int getOpenQty(); // open, unfilled qty.
-
-    void fillQty(int matchQty); // reduce open qty by matchQty
+    int getQty(); // original qty
 }

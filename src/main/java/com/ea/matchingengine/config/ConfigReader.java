@@ -15,7 +15,7 @@ import java.util.Iterator;
  **/
 public class ConfigReader {
 
-    public ConfigReader(){
+    public ConfigReader() {
     }
 
     public Configuration readConfig(String propertyFile) throws ConfigurationException, MalformedURLException {
@@ -26,11 +26,11 @@ public class ConfigReader {
 
     public static void print(Configuration config, Logger logger) {
         logger.info("PARSED CONFIG");
-        Iterator<String> t=config.getKeys();
-        while( t.hasNext() ){
-            String key=t.next();
-            String value=config.getString(key);
-            logger.info(key + "=" + value );
+        Iterator<String> t = config.getKeys();
+        while (t.hasNext()) {
+            String key = t.next();
+            String value = config.getString(key);
+            logger.info(key + "=" + value);
         }
     }
 }

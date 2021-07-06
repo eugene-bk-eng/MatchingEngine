@@ -6,8 +6,8 @@ package com.ea.matchingengine;
  **/
 public class LoggerNames {
 
-    public static String APP_LOG_NAME="async.app.log";
-    public static String TRADE_LOG_NAME="async.trade.log";
+    public static String APP_LOG_NAME = "async.app.log";
+    public static String TRADE_LOG_NAME = "async.trade.log";
 
     public static synchronized String getAppLoggerName() {
         return APP_LOG_NAME;

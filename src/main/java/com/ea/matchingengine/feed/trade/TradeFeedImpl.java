@@ -12,6 +12,15 @@ package com.ea.matchingengine.feed.trade;
  * Actual feed message include:
  * TYPE     Symbol  Side    Qty     Price
  * N/U/D    IBM     BID     100     10.50
+ * <p>
+ * Book feed sends
+ * NEW - order added at a level.
+ * UPDATE - order level is updated, must be price
+ * DELETE - order level is removed.
+ * <p>
+ * Actual feed message include:
+ * TYPE     Symbol  Side    Qty     Price
+ * N/U/D    IBM     BID     100     10.50
  */
 
 /**
@@ -46,7 +55,7 @@ public class TradeFeedImpl extends AbstractTradeFeed {
 
     @Override
     public void reportTrade(String symbol, int qtyMatch, double pxMatch) {
-        logger.info( String.format("MATCHED TRADE %s, qty:%s, px: %s", symbol, qtyMatch, pxMatch));
+        logger.info(String.format("MATCHED TRADE %s, qty:%s, px: %s", symbol, qtyMatch, pxMatch));
 
         // TODO: build overfill policy
         listTrades.add(new DefaultTradeFeedMsg(System.nanoTime(), symbol, qtyMatch, pxMatch));
@@ -59,6 +68,6 @@ public class TradeFeedImpl extends AbstractTradeFeed {
 
     @Override
     public List<TradeMsg> getLastTrades(String symbol) {
-        return listTrades.stream().filter(s->s.getSym().equals(symbol)).collect(Collectors.toList());
+        return listTrades.stream().filter(s -> s.getSym().equals(symbol)).collect(Collectors.toList());
     }
 }

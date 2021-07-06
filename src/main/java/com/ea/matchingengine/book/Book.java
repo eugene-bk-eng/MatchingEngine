@@ -4,15 +4,12 @@
  **/
 package com.ea.matchingengine.book;
 
-import com.ea.matchingengine.fix.input.Amend;
-import com.ea.matchingengine.fix.input.Cancel;
-import com.ea.matchingengine.fix.input.Order;
+import com.ea.matchingengine.book.model.BookCancel;
+import com.ea.matchingengine.book.model.BookOrder;
 
 public interface Book {
 
-    void match(Order order);
+    void match(BookOrder order);
 
-    void match(Cancel cancel);
-
-    void match(Amend amend);
+    void match(BookCancel cancel);
 }

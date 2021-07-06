@@ -8,16 +8,20 @@ package com.ea.matchingengine.engine;
 import com.ea.matchingengine.LoggerNames;
 import com.ea.matchingengine.book.Book;
 import com.ea.matchingengine.book.BookImpl;
+import com.ea.matchingengine.book.model.BookCancel;
+import com.ea.matchingengine.book.model.BookCancelImpl;
+import com.ea.matchingengine.book.model.BookOrder;
+import com.ea.matchingengine.book.model.BookOrderImpl;
 import com.ea.matchingengine.feed.quote.QuoteFeed;
 import com.ea.matchingengine.feed.quote.QuoteFeedImpl;
 import com.ea.matchingengine.feed.trade.TradeFeed;
 import com.ea.matchingengine.feed.trade.TradeFeedImpl;
-import com.ea.matchingengine.fix.input.Amend;
-import com.ea.matchingengine.fix.input.Cancel;
-import com.ea.matchingengine.fix.input.MsgType;
-import com.ea.matchingengine.fix.input.Order;
-import com.ea.matchingengine.fix.input.OrderImpl;
-import com.ea.matchingengine.fix.input.Request;
+import com.ea.matchingengine.fix.client.FixAmend;
+import com.ea.matchingengine.fix.client.FixCancel;
+import com.ea.matchingengine.fix.client.FixOrder;
+import com.ea.matchingengine.fix.client.FixOrderImpl;
+import com.ea.matchingengine.fix.client.MsgType;
+import com.ea.matchingengine.fix.client.Request;
 import com.google.common.base.Preconditions;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.logging.log4j.LogManager;
@@ -106,21 +110,37 @@ public class MatchingEngineImpl implements MatchingEngine {
         synchronized (book) {
             switch (request.getMsgType()) {
                 case ORDER:
-                    logger.info("RCVD " + request);
-                    Order order = (Order) request;
+                    logger.info("RCVD ORDER: " + request);
+                    FixOrder order = (FixOrder) request;
                     validate(order);
-                    book.match(order);
+                    book.match(convertToBookOrder(order));
                     break;
                 case CANCEL:
-                    book.match((Cancel) request);
-                    break;
-                case AMEND:
-                    book.match((Amend) request);
+                    logger.info("RCVD CANCEL: " + request);
+                    FixCancel cancel = (FixCancel) request;
+                    validate(cancel);
+                    book.match(convertToBookOrder(cancel));
                     break;
             }
         }
     }
 
+    /**
+     * TODO: you should replace client order with something that
+     * only belongs to this client.
+     *
+     * @param order
+     * @return
+     */
+    private BookOrder convertToBookOrder(FixOrder order) {
+        BookOrder bookOrder = new BookOrderImpl(order.getClientId(), order.getOrderId(), order.getSym(), order.getSide(), order.getType(), order.getQty(), order.getPrice());
+        return bookOrder;
+    }
+
+    private BookCancel convertToBookOrder(FixCancel cancel) {
+        BookCancel bookCancel = new BookCancelImpl(cancel.getClientId(), cancel.getOrderId(), cancel.getSym());
+        return bookCancel;
+    }
 
     // match happens asynchronously. caller returns quickly
     @Override
@@ -128,11 +148,13 @@ public class MatchingEngineImpl implements MatchingEngine {
         // validate order
         validate(request);
         //
-        if( request.getMsgType()==MsgType.ORDER ) {
-            validate((Order)request);
+        if (request.getMsgType() == MsgType.ORDER) {
+            validate((FixOrder) request);
+        } else if (request.getMsgType() == MsgType.AMEND) {
+            validate((FixAmend) request);
         }
         // normalize price to two/four decimal points based on RegNMS
-        request=normalizePriceDecimalPoint(request);
+        request = normalizePriceDecimalPoint(request);
         // add
         Queue<Request> queue = mapBookOrdQueue.computeIfAbsent(request.getSym(), p -> new LinkedBlockingQueue());
         queue.offer(request);
@@ -140,17 +162,25 @@ public class MatchingEngineImpl implements MatchingEngine {
     }
 
     // TODO: slow method, figure out better solution.
+    // Price must be normalized because double is used as a key
+    // in a sorted book structure. Per stock, prices must be normalizeds to the same
+    // decimal, two or 4 places.
     private Request normalizePriceDecimalPoint(Request request) {
-        if (request.getMsgType() == MsgType.ORDER ||
-                request.getMsgType() == MsgType.AMEND) {
-            Order order = (Order) request;
-            double roundedPrice = BigDecimal.valueOf(order.getPrice()).setScale(
-                    2, RoundingMode.HALF_UP).doubleValue();
-            Order newOrder=new OrderImpl(
-                    order.getId(),
-                    order.getSym(),order.getType(),
-                    order.getSide(), order.getSize(), roundedPrice);
+        if (request.getMsgType() == MsgType.ORDER) {
+            FixOrder order = (FixOrder) request;
+            double roundedPrice = BigDecimal.valueOf(order.getPrice()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            FixOrder newOrder = new FixOrderImpl(order, roundedPrice);
             return newOrder;
+        } else if (request.getMsgType() == MsgType.AMEND) {
+            throw new IllegalStateException();
+//            Amend amend = (Amend) request;
+//            double roundedPrice = BigDecimal.valueOf(amend.getAmendedPrice()).setScale(
+//                    2, RoundingMode.HALF_UP).doubleValue();
+//            Amend newAmend=new AmendImpl(
+//                    amend.getId(),
+//                    amend.getSym(),amend.getType(),
+//                    amend.getSide(), amend.getSize(), roundedPrice, amend.getOldPrice());
+            //return newAmend;
         }
         return request;
     }
@@ -158,7 +188,7 @@ public class MatchingEngineImpl implements MatchingEngine {
     @Override
     public void shutdown() {
         // TODO: add shutdown routines
-        if( executorService!=null ) {
+        if (executorService != null) {
             executorService.shutdown();
         }
     }
@@ -169,10 +199,16 @@ public class MatchingEngineImpl implements MatchingEngine {
         Preconditions.checkArgument(request.getSym() != null);
     }
 
-    void validate(Order order) {
+    void validate(FixOrder order) {
         Preconditions.checkArgument(order.getPrice() > 0, order);
-        Preconditions.checkArgument(order.getSize() > 0, order);
-        Preconditions.checkArgument(order.getSym().length()>0, order);
+        Preconditions.checkArgument(order.getQty() > 0, order);
+        Preconditions.checkArgument(order.getSym().length() > 0, order);
+    }
+
+    void validate(FixAmend amend) {
+        Preconditions.checkArgument(amend.getAmendedPrice() > 0, amend);
+        Preconditions.checkArgument(amend.getSize() > 0, amend);
+        Preconditions.checkArgument(amend.getSym().length() > 0, amend);
     }
 
     @Override
@@ -186,7 +222,7 @@ public class MatchingEngineImpl implements MatchingEngine {
     }
 
     public static void main(String args[]) throws Exception {
-        org.apache.commons.configuration2.Configuration config=new MapConfiguration(new HashMap());
+        org.apache.commons.configuration2.Configuration config = new MapConfiguration(new HashMap());
         new MatchingEngineImpl(config);
     }
 }

@@ -34,17 +34,17 @@ public class Launcher {
         logger.info("INPUT CONFIG: " + cfg);
 
         // get configuration
-        Configuration configuration =(new ConfigReader()).readConfig(cfg.getConfigFile());
-        ConfigReader.print(configuration,logger);
+        Configuration configuration = (new ConfigReader()).readConfig(cfg.getConfigFile());
+        ConfigReader.print(configuration, logger);
 
         // launch
-        MatchingEngine matchingEngine=UtilReflection.loadInstance(MatchingEngine.class, configuration.getString("program"), Configuration.class, configuration );
+        MatchingEngine matchingEngine = UtilReflection.loadInstance(MatchingEngine.class, configuration.getString("program"), Configuration.class, configuration);
         matchingEngine.startMatching();
     }
 
     public void printProcessInfo() {
         logger.info(String.format("PID: %s", ManagementFactory.getRuntimeMXBean().getPid()));
-        logger.info(String.format("TIME ZONE: %s", TimeZone.getDefault().getDisplayName() ));
+        logger.info(String.format("TIME ZONE: %s", TimeZone.getDefault().getDisplayName()));
         logger.info(String.format("JVM Name: %s", ManagementFactory.getRuntimeMXBean().getName()));
         logger.info(String.format("JVM Spec: %s", ManagementFactory.getRuntimeMXBean().getSpecName()));
         logger.info(String.format("JVM VERSION: %s", ManagementFactory.getRuntimeMXBean().getSpecVersion()));
@@ -57,7 +57,7 @@ public class Launcher {
         try {
             new Launcher(args);
         } catch (Exception e) {
-            logger.error(e.getLocalizedMessage(),e);
+            logger.error(e.getLocalizedMessage(), e);
         }
     }
 }

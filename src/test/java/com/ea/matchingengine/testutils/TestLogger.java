@@ -19,15 +19,15 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * This class is designed to install new appender and new logger which writes
  * into memory. You can then assert the logs as you like.
- *
+ * <p>
  * TODO: fix the format and create get info, debug, warning and error line methods.
  */
 
 public class TestLogger {
 
-    private final static String APP_LOGGER_NAME="junit.app.log";
-    private final static String TRADE_LOGGER_NAME="junit.trade.log";
-    private final static Map<String,StringWriter> map=new ConcurrentHashMap();
+    private final static String APP_LOGGER_NAME = "junit.app.log";
+    private final static String TRADE_LOGGER_NAME = "junit.trade.log";
+    private final static Map<String, StringWriter> map = new ConcurrentHashMap();
 
     public static void createCustomLoggers() {
 
@@ -39,7 +39,7 @@ public class TestLogger {
     }
 
     public static void destroyCustomLoggers() {
-        for (String loggerName: map.keySet()) {
+        for (String loggerName : map.keySet()) {
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Configuration config = ctx.getConfiguration();
             config.removeLogger(loggerName);
@@ -53,14 +53,14 @@ public class TestLogger {
     }
 
     public static String[] getAppLogLines() {
-        String content=map.get(APP_LOGGER_NAME).getBuffer().toString();
+        String content = map.get(APP_LOGGER_NAME).getBuffer().toString();
         String lines[] = content.split("\\r?\\n");
         return lines;
     }
 
     private static void createAppLogger(String loggerName) {
 
-        Preconditions.checkArgument(map.containsKey(loggerName)==false);
+        Preconditions.checkArgument(map.containsKey(loggerName) == false);
 
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
@@ -72,18 +72,18 @@ public class TestLogger {
                 .withPattern("%d{HH:mm:ss.SSS} [%t] %-5.5p %20.30C{1}:%L - %m%n").build();
 
         StringWriter stringWriter = new StringWriter();
-        map.put(loggerName,stringWriter);
+        map.put(loggerName, stringWriter);
         WriterAppender writerAppender = WriterAppender.newBuilder().setName("writeLogger").setTarget(stringWriter).setLayout(layout).build();
         writerAppender.start();
         config.addAppender(writerAppender);
 
-        ConsoleAppender consoleAppender=ConsoleAppender.newBuilder().setName("console-log").setTarget(ConsoleAppender.Target.SYSTEM_OUT).setLayout(console_layout).build();
+        ConsoleAppender consoleAppender = ConsoleAppender.newBuilder().setName("console-log").setTarget(ConsoleAppender.Target.SYSTEM_OUT).setLayout(console_layout).build();
         consoleAppender.start();
         config.addAppender(consoleAppender);
 
         AppenderRef ref = AppenderRef.createAppenderRef("writeLogger", null, null);
         AppenderRef console = AppenderRef.createAppenderRef("console-log", null, null);
-        AppenderRef[] refs = new AppenderRef[] { ref, console };
+        AppenderRef[] refs = new AppenderRef[]{ref, console};
 
         LoggerConfig loggerConfig =
                 LoggerConfig.createLogger(false, Level.INFO, loggerName, null, refs, null, config, null);

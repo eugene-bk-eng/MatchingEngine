@@ -6,12 +6,13 @@ package com.ea.matchingengine.engine;
 
 import com.ea.matchingengine.feed.quote.QuoteFeed;
 import com.ea.matchingengine.feed.trade.TradeFeed;
-import com.ea.matchingengine.fix.input.Request;
+import com.ea.matchingengine.fix.client.Request;
 
 public interface MatchingEngine {
 
     /**
      * Non blocking call. places request on the queue
+     *
      * @param order
      */
     void accept(Request order);
@@ -23,6 +24,7 @@ public interface MatchingEngine {
     /**
      * Blocking call if there is nothing to take.
      * internal threads are used to dispatch
+     *
      * @throws InterruptedException
      */
     void waitAndProcessNextMsg() throws InterruptedException;

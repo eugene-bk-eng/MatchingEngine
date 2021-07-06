@@ -20,7 +20,7 @@ public class DefaultTradeFeedMsg implements TradeMsg {
     final long regularTime;
 
     public DefaultTradeFeedMsg(long timestamp_rcvd, String sym, int size, double price) {
-        this.timestamp_rcvd=timestamp_rcvd;
+        this.timestamp_rcvd = timestamp_rcvd;
         this.regularTime = System.currentTimeMillis();
         this.sym = sym;
         this.size = size;
@@ -40,17 +40,21 @@ public class DefaultTradeFeedMsg implements TradeMsg {
     }
 
     @Override
-    public long getTime() { return regularTime;  }
+    public long getTime() {
+        return regularTime;
+    }
 
     @Override
-    public long getHighResTime() { return timestamp_rcvd; }
+    public long getHighResTime() {
+        return timestamp_rcvd;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DefaultTradeFeedMsg that = (DefaultTradeFeedMsg) o;
-        return size == that.size && Math.abs(that.price-price) <= 0.001 && Objects.equals(sym, that.sym);
+        return size == that.size && Math.abs(that.price - price) <= 0.001 && Objects.equals(sym, that.sym);
     }
 
     @Override

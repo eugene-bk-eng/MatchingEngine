@@ -18,6 +18,7 @@ public interface QuoteFeed {
 
     /**
      * Very slow method use for debugging.
+     *
      * @param symbol
      * @return
      */

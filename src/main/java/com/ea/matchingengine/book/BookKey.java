@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /**
  * Comparable is required such TreeMap can build a tree and order keys
- *
+ * <p>
  * Wrapping is helpful such that
  *
  * @author : eugene
@@ -36,7 +36,7 @@ public class BookKey implements Comparable {
 
     @Override
     public int compareTo(Object o) {
-        return Double.compare( price, ((BookKey)o).getPrice() );
+        return Double.compare(price, ((BookKey) o).getPrice());
     }
 
     @Override

@@ -6,7 +6,7 @@
 package com.ea.matchingengine;
 
 import com.ea.matchingengine.feed.trade.DefaultTradeFeedMsg;
-import com.ea.matchingengine.fix.input.Order;
+import com.ea.matchingengine.fix.client.FixOrder;
 import com.ea.matchingengine.testutils.TestLogger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,13 +24,13 @@ public class TestMatching extends AbstractTestBase {
 
         logger.info("testQuotePlacementAndOrdering");
 
-        lmtBuy(SYM_IBM, 300, 10.20);
-        lmtBuy(SYM_IBM, 100, 10.50);
-        lmtBuy(SYM_IBM, 200, 10.30);
-        lmtBuy(SYM_IBM, 300, 10.50); // 2nd order on level
+        lmtBuy("C1", SYM_IBM, 300, 10.20);
+        lmtBuy("C1", SYM_IBM, 100, 10.50);
+        lmtBuy("C1", SYM_IBM, 200, 10.30);
+        lmtBuy("C1", SYM_IBM, 300, 10.50); // 2nd order on level
 
-        lmtSell(SYM_IBM, 100, 15.00);
-        lmtSell(SYM_IBM, 200, 15.10);
+        lmtSell("C1", SYM_IBM, 100, 15.00);
+        lmtSell("C1", SYM_IBM, 200, 15.10);
 
         showBook(SYM_IBM);
 
@@ -39,14 +39,13 @@ public class TestMatching extends AbstractTestBase {
 
         // lowest offer price to clients is on top
         // this is the best (lowest) price exch willing to sell at, followed by next best (slightly higher)
-        assertBook(SYM_IBM,  "           |200 x 15.1",
-                                    "           |100 x 15.0",
-                                    "400 x 10.5 |          ",
-                                    "200 x 10.3 |          ",
-                                    "300 x 10.2 |          ");
+        assertBook(SYM_IBM, "           |200 x 15.1",
+                "           |100 x 15.0",
+                "400 x 10.5 |          ",
+                "200 x 10.3 |          ",
+                "300 x 10.2 |          ");
 
-        String logLines[]=TestLogger.getAppLogLines();
-        int bl=0;
+        String logLines[] = TestLogger.getAppLogLines();
         //Assert.assertTrue(logLines.length>1);
     }
 
@@ -55,8 +54,8 @@ public class TestMatching extends AbstractTestBase {
 
         logger.info("testSimpleMatch");
 
-        lmtBuy(SYM_IBM, 100, 10.50);
-        lmtSell(SYM_IBM, 100, 10.50);
+        lmtBuy("C1", SYM_IBM, 100, 10.50);
+        lmtSell("C1", SYM_IBM, 100, 10.50);
 
         showBook(SYM_IBM);
 
@@ -64,47 +63,47 @@ public class TestMatching extends AbstractTestBase {
         assertBookBidAskEmpty(SYM_IBM);
 
         // check trade has occurred
-        assertTrades( "ibm.n,100,10.50");
+        assertTrades("ibm.n,100,10.50");
 
-        String logLines[]=TestLogger.getAppLogLines();
-        Assert.assertTrue(logLines.length>1);
+        String logLines[] = TestLogger.getAppLogLines();
+        Assert.assertTrue(logLines.length > 1);
     }
 
     @Test
     public void testMatchPriceImprovement() throws InterruptedException {
 
-        lmtBuy(SYM_IBM, 100, 15.00);
-        lmtSell(SYM_IBM, 300, 10.00);
+        lmtBuy("C1", SYM_IBM, 100, 15.00);
+        lmtSell("C1", SYM_IBM, 300, 10.00);
 
         showBook(SYM_IBM);
 
         // check quote feed
-        assertBook(SYM_IBM,  "     |200 x 10",
-                                    "empty|");
+        assertBook(SYM_IBM, "     |200 x 10",
+                "empty|");
 
-        assertTrades( "ibm.n,100,12.50");
+        assertTrades("ibm.n,100,12.50");
     }
 
     @Test
     public void testMatchAndPostTwoSymbols() throws InterruptedException {
 
-        lmtBuy(SYM_IBM, 100, 15.00);
-        lmtSell(SYM_IBM, 300, 10.00);
+        lmtBuy("C1", SYM_IBM, 100, 15.00);
+        lmtSell("C1", SYM_IBM, 300, 10.00);
 
-        lmtSell(SYM_AAPL, 250, 10.20);
-        lmtBuy(SYM_AAPL, 100, 10.20);
+        lmtSell("C1", SYM_AAPL, 250, 10.20);
+        lmtBuy("C1", SYM_AAPL, 100, 10.20);
 
         showBook(SYM_IBM);
         showBook(SYM_AAPL);
 
         // check quote feed
-        assertBook(SYM_IBM,  "     |200 x 10.00",
-                                    "empty|");
-        assertBook(SYM_AAPL,  "     |150 x 10.20",
-                                     "empty|");
+        assertBook(SYM_IBM, "     |200 x 10.00",
+                "empty|");
+        assertBook(SYM_AAPL, "     |150 x 10.20",
+                "empty|");
         // check trade feed
-        assertTrades( "ibm.n,100,12.50",
-                               "aapl.q,100,10.20");
+        assertTrades("ibm.n,100,12.50",
+                "aapl.q,100,10.20");
     }
 
     /**
@@ -123,15 +122,15 @@ public class TestMatching extends AbstractTestBase {
 
         String sym = "ibm.n";
 
-        lmtBuy(SYM_IBM, 100, 10.5055667); // decimal price
-        lmtSell(SYM_IBM, 100, 11.789); // decimal price
+        lmtBuy("C1", SYM_IBM, 100, 10.5055667); // decimal price
+        lmtSell("C1", SYM_IBM, 100, 11.789); // decimal price
 
         showBook(sym);
 
         // construct expected book and verify
         // highest bid price to clients is on top
-        assertBook(SYM_IBM,"100","10.51",
-                                "100", "11.79");
+        assertBook(SYM_IBM, "100", "10.51",
+                "100", "11.79");
 
         showBook(sym);
     }
@@ -139,6 +138,7 @@ public class TestMatching extends AbstractTestBase {
     /**
      * You have to coordinate buys and sell prices.
      * Otherwise the book will price improve and writing a test is harder
+     *
      * @throws InterruptedException
      */
     @Test
@@ -153,8 +153,8 @@ public class TestMatching extends AbstractTestBase {
         for (int i = 0; i < orders_n; i++) {
             double orderPrice = initialPrice + i * delta;
             lastPrice = orderPrice;
-            lmtBuy(SYM_IBM, 100, orderPrice);
-            
+            lmtBuy("C1", SYM_IBM, 100, orderPrice);
+
         }
         // sells go in the opposite direction, starting from the highest bid
         // bid is how much you are willing to pay for something
@@ -162,8 +162,8 @@ public class TestMatching extends AbstractTestBase {
         initialPrice = lastPrice;
         for (int i = 0; i < orders_n; i++) {
             double orderPrice = initialPrice - i * delta;
-            lmtSell(SYM_IBM, 100, orderPrice);
-            
+            lmtSell("C1", SYM_IBM, 100, orderPrice);
+
         }
 
         logger.info("\n" + engine.getQuoteFeed().getBook(sym));
@@ -188,36 +188,59 @@ public class TestMatching extends AbstractTestBase {
 
         logger.info("testSimpleMatchCancelRemaining");
 
-        lmtBuy(SYM_IBM, 100, 10.50);
-        Order sellOrder1=lmtSell(SYM_IBM, 250, 10.50);
-        Order sellOrder2=lmtSell(SYM_IBM, 300, 10.50);
-        Order sellOrder3=lmtSell(SYM_IBM, 200, 10.70);
+        lmtBuy("C1", SYM_IBM, 100, 10.50);
+        FixOrder sellOrder1 = lmtSell("C1", SYM_IBM, 250, 10.50);
+        FixOrder sellOrder2 = lmtSell("C1", SYM_IBM, 300, 10.50);
+        FixOrder sellOrder3 = lmtSell("C1", SYM_IBM, 200, 10.70);
 
         showBook(SYM_IBM);
 
-        assertBook(SYM_IBM,     "     |200 x 10.70",
-                                       "     |450 x 10.50",
-                                       "empty|");
+        assertBook(SYM_IBM, "     |200 x 10.70",
+                "     |450 x 10.50",
+                "empty|");
 
         cancelOrder(sellOrder1);
 
-        assertBook(SYM_IBM,     "     |200 x 10.70",
-                                        "     |300 x 10.50",
-                                        "empty|");
+        assertBook(SYM_IBM, "     |200 x 10.70",
+                "     |300 x 10.50",
+                "empty|");
 
         cancelOrder(sellOrder2);
 
         assertBook(SYM_IBM, "     |200 x 10.70",
-                                        "empty|");
+                "empty|");
         cancelOrder(sellOrder3);
 
         assertBookBidAskEmpty(SYM_IBM);
 
         // check trade has occurred
-        assertTrades( "ibm.n,100,10.50");
+        assertTrades("ibm.n,100,10.50");
 
-        String logLines[]=TestLogger.getAppLogLines();
-        Assert.assertTrue(logLines.length>1);
+        String logLines[] = TestLogger.getAppLogLines();
+        Assert.assertTrue(logLines.length > 1);
+    }
+
+    @Test
+    public void testAmend() throws InterruptedException {
+
+        logger.info("testAmend");
+
+        lmtBuy("C1", SYM_IBM, 100, 10.50);
+        FixOrder sellOrder1 = lmtSell("C1", SYM_IBM, 250, 10.50);
+        FixOrder sellOrder2 = lmtSell("C1", SYM_IBM, 300, 10.50);
+        FixOrder sellOrder3 = lmtSell("C1", SYM_IBM, 200, 10.70);
+
+        showBook(SYM_IBM);
+
+        assertBook(SYM_IBM, "     |200 x 10.70",
+                "     |450 x 10.50",
+                "empty|");
+
+        //Amend amend1=amendOrder(sellOrder1,50,sellOrder1.getPrice());
+
+
+        String logLines[] = TestLogger.getAppLogLines();
+        Assert.assertTrue(logLines.length > 1);
     }
 
 }

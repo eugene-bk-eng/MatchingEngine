@@ -11,7 +11,7 @@ import java.lang.reflect.InvocationTargetException;
  **/
 public class UtilReflection {
 
-    public static <T extends MatchingEngine> T loadInstance(Class<T> type, String loadClass, Class constructorClz, Object constructorArg ) throws NoSuchMethodException, ClassNotFoundException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static <T extends MatchingEngine> T loadInstance(Class<T> type, String loadClass, Class constructorClz, Object constructorArg) throws NoSuchMethodException, ClassNotFoundException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Class<?> cl = Class.forName(loadClass);
         Constructor<?> cons = cl.getConstructor(constructorClz);
         Object instance = cons.newInstance(constructorArg);

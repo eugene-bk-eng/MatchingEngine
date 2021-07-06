@@ -36,14 +36,13 @@ public class StartupOptions {
 
     public ConfigurationProps parse(String[] args) throws ParseException, IOException {
         Preconditions.checkNotNull(args);
-        Options options=configureOptions();
-        CommandLine cmd = parser.parse( options, args);
-        ConfigurationProps result=new ConfigurationProps();
+        Options options = configureOptions();
+        CommandLine cmd = parser.parse(options, args);
+        ConfigurationProps result = new ConfigurationProps();
 
-        if( cmd.hasOption("c") || cmd.hasOption("config")  ) {
-            result.setConfigFile( cmd.getOptionValue("c"));
-        }
-        else{
+        if (cmd.hasOption("c") || cmd.hasOption("config")) {
+            result.setConfigFile(cmd.getOptionValue("c"));
+        } else {
             printUsage(options);
         }
         return result;
@@ -53,15 +52,15 @@ public class StartupOptions {
         logger.info("PRINTING USAGE");
         // automatically generate the help statement
         HelpFormatter formatter = new HelpFormatter();
-        ByteArrayOutputStream bout=new ByteArrayOutputStream();
-        PrintWriter out=new PrintWriter(bout);
-        formatter.printHelp(out,80,"-","USAGE", options, 5,5, "END" );
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        PrintWriter out = new PrintWriter(bout);
+        formatter.printHelp(out, 80, "-", "USAGE", options, 5, 5, "END");
         out.flush();
-        logger.info( bout.toString() );
+        logger.info(bout.toString());
     }
 
     public static class ConfigurationProps {
-        private  String configFile;
+        private String configFile;
 
         public String getConfigFile() {
             return configFile;
