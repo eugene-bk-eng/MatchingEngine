@@ -10,7 +10,7 @@ public class BookCancelImpl implements BookCancel {
     private String sym;
 
     public BookCancelImpl(String clientId, String orderId, String sym) {
-        this.orderId = new OrderId(clientId,orderId);
+        this.orderId = new OrderId(clientId, orderId);
         this.sym = sym;
     }
 

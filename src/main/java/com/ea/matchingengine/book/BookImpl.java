@@ -10,7 +10,6 @@ import com.ea.matchingengine.book.model.OrderId;
 import com.ea.matchingengine.feed.quote.FeedMsgSide;
 import com.ea.matchingengine.feed.quote.QuoteFeed;
 import com.ea.matchingengine.feed.trade.TradeFeed;
-import com.ea.matchingengine.fix.client.FixAmend;
 import com.ea.matchingengine.fix.client.OrderSide;
 import com.ea.matchingengine.fix.client.OrderType;
 import com.google.common.collect.Maps;
@@ -48,6 +47,49 @@ public class BookImpl extends AbstractBook {
             default:
                 throw new UnsupportedOperationException();
         }
+    }
+
+    @Override
+    public void match(BookCancel bookCancel) {
+        // TODO: create quick map lookup. this is a dumb linear implementation
+
+        // look in bids
+        for (Map.Entry<BookKey, List<BookOrder>> e : bidMap.entrySet()) {
+            BookKey key = e.getKey();
+            Iterator<BookOrder> t = e.getValue().iterator();
+            while (t.hasNext()) {
+                BookOrder order = t.next();
+                if (order.getOrderId().equals(bookCancel.getOrderId())) {
+                    // cancel this level, update market feed
+                    int beforeQty = bidMap.get(key).stream().mapToInt(s -> s.getBookQty()).sum();
+                    int afterQty = beforeQty - order.getBookQty();
+                    quoteFeed.reportBookChange(FeedMsgSide.BID, order.getSym(), key, beforeQty, afterQty);
+                    // remove order
+                    t.remove();
+                    // out
+                    break;
+                }
+            }
+        }
+
+        for (Map.Entry<BookKey, List<BookOrder>> e : askMap.entrySet()) {
+            BookKey key = e.getKey();
+            Iterator<BookOrder> t = e.getValue().iterator();
+            while (t.hasNext()) {
+                BookOrder order = t.next();
+                if (order.getOrderId().equals(bookCancel.getOrderId())) {
+                    // cancel this level, update market feed
+                    int beforeQty = askMap.get(key).stream().mapToInt(s -> s.getBookQty()).sum();
+                    int afterQty = beforeQty - order.getBookQty();
+                    quoteFeed.reportBookChange(FeedMsgSide.OFFER, order.getSym(), key, beforeQty, afterQty);
+                    // remove order
+                    t.remove();
+                    // out
+                    break;
+                }
+            }
+        }
+
     }
 
     /**
@@ -198,46 +240,4 @@ public class BookImpl extends AbstractBook {
         return true;
     }
 
-    @Override
-    public void match(BookCancel bookCancel) {
-        // TODO: create quick map lookup. this is a dumb linear implementation
-
-        // look in bids
-        for (Map.Entry<BookKey, List<BookOrder>> e : bidMap.entrySet()) {
-            BookKey key = e.getKey();
-            Iterator<BookOrder> t = e.getValue().iterator();
-            while (t.hasNext()) {
-                BookOrder order = t.next();
-                if (order.getOrderId().equals(bookCancel.getOrderId())) {
-                    // cancel this level, update market feed
-                    int beforeQty = bidMap.get(key).stream().mapToInt(s -> s.getBookQty()).sum();
-                    int afterQty = beforeQty - order.getBookQty();
-                    quoteFeed.reportBookChange(FeedMsgSide.BID, order.getSym(), key, beforeQty, afterQty);
-                    // remove order
-                    t.remove();
-                    // out
-                    break;
-                }
-            }
-        }
-
-        for (Map.Entry<BookKey, List<BookOrder>> e : askMap.entrySet()) {
-            BookKey key = e.getKey();
-            Iterator<BookOrder> t = e.getValue().iterator();
-            while (t.hasNext()) {
-                BookOrder order = t.next();
-                if (order.getOrderId().equals(bookCancel.getOrderId())) {
-                    // cancel this level, update market feed
-                    int beforeQty = askMap.get(key).stream().mapToInt(s -> s.getBookQty()).sum();
-                    int afterQty = beforeQty - order.getBookQty();
-                    quoteFeed.reportBookChange(FeedMsgSide.OFFER, order.getSym(), key, beforeQty, afterQty);
-                    // remove order
-                    t.remove();
-                    // out
-                    break;
-                }
-            }
-        }
-
-    }
 }

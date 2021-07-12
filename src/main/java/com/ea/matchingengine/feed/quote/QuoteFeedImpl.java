@@ -21,6 +21,15 @@ package com.ea.matchingengine.feed.quote;
  * Actual feed message include:
  * TYPE     Symbol  Side    Qty     Price
  * N/U/D    IBM     BID     100     10.50
+ * <p>
+ * Book feed sends
+ * NEW - order added at a level.
+ * UPDATE - order level is updated, must be price
+ * DELETE - order level is removed.
+ * <p>
+ * Actual feed message include:
+ * TYPE     Symbol  Side    Qty     Price
+ * N/U/D    IBM     BID     100     10.50
  */
 
 /**

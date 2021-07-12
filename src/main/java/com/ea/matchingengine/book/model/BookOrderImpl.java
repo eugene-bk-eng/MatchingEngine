@@ -18,7 +18,7 @@ public class BookOrderImpl implements BookOrder {
     private final double px;
 
     public BookOrderImpl(String clientId, String orderId, String sym, OrderSide orderSide, OrderType orderType, int qty, double px) {
-        this.orderId = new OrderId(clientId,orderId);
+        this.orderId = new OrderId(clientId, orderId);
         this.sym = sym;
         this.orderSide = orderSide;
         this.orderType = orderType;
