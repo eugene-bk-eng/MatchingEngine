@@ -1,4 +1,6 @@
-package com.ea.matchingengine.book.model;
+package com.ea.matchingengine.book.order.api;
+
+import com.ea.matchingengine.book.order.impl.OrderId;
 
 /**
  * @author : eugene

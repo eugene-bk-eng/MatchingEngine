@@ -1,5 +1,6 @@
-package com.ea.matchingengine.book.model;
+package com.ea.matchingengine.book.order.impl;
 
+import com.ea.matchingengine.book.order.api.BookOrder;
 import com.ea.matchingengine.fix.client.OrderSide;
 import com.ea.matchingengine.fix.client.OrderType;
 import com.google.common.base.Preconditions;

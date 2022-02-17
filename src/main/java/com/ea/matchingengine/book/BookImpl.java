@@ -4,15 +4,13 @@
  **/
 package com.ea.matchingengine.book;
 
-import com.ea.matchingengine.book.model.BookCancel;
-import com.ea.matchingengine.book.model.BookOrder;
-import com.ea.matchingengine.book.model.OrderId;
+import com.ea.matchingengine.book.order.api.BookCancel;
+import com.ea.matchingengine.book.order.api.BookOrder;
 import com.ea.matchingengine.feed.quote.FeedMsgSide;
 import com.ea.matchingengine.feed.quote.QuoteFeed;
 import com.ea.matchingengine.feed.trade.TradeFeed;
 import com.ea.matchingengine.fix.client.OrderSide;
 import com.ea.matchingengine.fix.client.OrderType;
-import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,9 +23,6 @@ public class BookImpl extends AbstractBook {
 
     private final Map<BookKey, List<BookOrder>> bidMap = new TreeMap(Comparator.<Double>naturalOrder().reversed()); // sorted by price, highest on top.
     private final Map<BookKey, List<BookOrder>> askMap = new TreeMap(Comparator.<Double>naturalOrder()); // sorted by price, lowest on top.
-
-    private final Map<OrderId, BookKey> lookupBidOrder = Maps.newHashMap();
-    private final Map<OrderId, BookKey> lookupAskOrder = Maps.newHashMap();
 
     public BookImpl(String bookSymbol, QuoteFeed bookFeed, TradeFeed tradeFeed) {
         super(bookSymbol, bookFeed, tradeFeed);

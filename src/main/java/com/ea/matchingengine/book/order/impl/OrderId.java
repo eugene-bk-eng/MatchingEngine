@@ -1,4 +1,4 @@
-package com.ea.matchingengine.book.model;
+package com.ea.matchingengine.book.order.impl;
 
 import com.google.common.base.Preconditions;
 

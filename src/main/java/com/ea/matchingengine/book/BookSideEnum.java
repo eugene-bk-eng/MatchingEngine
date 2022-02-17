@@ -4,6 +4,6 @@
  **/
 package com.ea.matchingengine.book;
 
-public enum BookSide {
+public enum BookSideEnum {
     BID, OFFER;
 }

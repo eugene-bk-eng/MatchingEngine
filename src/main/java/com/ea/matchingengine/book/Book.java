@@ -4,8 +4,8 @@
  **/
 package com.ea.matchingengine.book;
 
-import com.ea.matchingengine.book.model.BookCancel;
-import com.ea.matchingengine.book.model.BookOrder;
+import com.ea.matchingengine.book.order.api.BookCancel;
+import com.ea.matchingengine.book.order.api.BookOrder;
 
 public interface Book {
 
