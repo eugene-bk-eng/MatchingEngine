@@ -92,20 +92,6 @@ task copyDependencies(type: Copy) {
     into 'dependencies'
 }
 
-// simple
-task hello {
-    doLast {
-        println 'Hello world!'
-    }
-}
-
-// task dependency
-task intro(dependsOn: hello) {
-    doLast {
-        println "I'm Gradle"
-    }
-}
-
 // task x depends on y defined later
 task taskX(dependsOn: 'taskY') {
     doLast {

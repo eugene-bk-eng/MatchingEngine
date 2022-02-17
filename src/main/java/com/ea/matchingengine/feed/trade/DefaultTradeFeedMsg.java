@@ -13,6 +13,7 @@ import java.util.Objects;
  * * N/U/D    IBM     BID     100     10.50
  */
 public class DefaultTradeFeedMsg implements TradeMsg {
+
     final String sym;
     final int size;
     final double price;

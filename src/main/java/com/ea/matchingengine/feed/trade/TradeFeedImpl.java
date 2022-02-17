@@ -59,7 +59,8 @@ import java.util.stream.Collectors;
 
 public class TradeFeedImpl extends AbstractTradeFeed {
 
-    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
+    private final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
+    private final Logger loggerTrade = LogManager.getLogger(LoggerNames.getTradeLoggerName());
     private final List<TradeMsg> listTrades = new LinkedList<>();
 
     @Override
@@ -67,7 +68,9 @@ public class TradeFeedImpl extends AbstractTradeFeed {
         logger.info(String.format("MATCHED TRADE %s, qty:%s, px: %s", symbol, qtyMatch, pxMatch));
 
         // TODO: build overfill policy
-        listTrades.add(new DefaultTradeFeedMsg(System.nanoTime(), symbol, qtyMatch, pxMatch));
+        TradeMsg trade=new DefaultTradeFeedMsg(System.nanoTime(), symbol, qtyMatch, pxMatch);
+        listTrades.add(trade);
+        loggerTrade.info(trade);
     }
 
     @Override

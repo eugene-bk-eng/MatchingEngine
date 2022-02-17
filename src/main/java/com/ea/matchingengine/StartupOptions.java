@@ -20,7 +20,7 @@ import java.io.PrintWriter;
  **/
 public class StartupOptions {
 
-    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
+    private final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
     private final CommandLineParser parser = new DefaultParser();
 
     public StartupOptions() {

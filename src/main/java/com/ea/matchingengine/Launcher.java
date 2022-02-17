@@ -22,7 +22,7 @@ import java.util.TimeZone;
  */
 public class Launcher {
 
-    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
+    private final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
 
     public Launcher(String args[]) throws Exception {
 
@@ -57,7 +57,9 @@ public class Launcher {
         try {
             new Launcher(args);
         } catch (Exception e) {
-            logger.error(e.getLocalizedMessage(), e);
+            // can't use logger here
+            System.err.println(e.getLocalizedMessage());
+            e.printStackTrace();
         }
     }
 }

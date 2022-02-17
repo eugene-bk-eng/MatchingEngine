@@ -62,7 +62,7 @@ import java.util.Map;
 
 public class QuoteFeedImpl extends AbstractQuoteFeed {
 
-    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
+    private final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
     Map<String, Map<BookKey, QuoteMsg>> bids = Maps.newHashMap(); // sorted by price, highest on top.
     Map<String, Map<BookKey, QuoteMsg>> offers = Maps.newHashMap(); // sorted by price, lowest on top.
     private BookPrinter bookPrinter;

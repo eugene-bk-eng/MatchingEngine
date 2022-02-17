@@ -34,9 +34,7 @@ import java.util.List;
  **/
 public abstract class AbstractTestBase {
 
-    private TestLogger appender;
-
-    private final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
+    private Logger logger = null;
     public MatchingEngine engine;
     //public final List<QuoteMsg> bidBook = Lists.newArrayList(), offerBook = Lists.newArrayList();
     public final List<TradeMsg> tradesFeed = Lists.newArrayList();
@@ -48,6 +46,7 @@ public abstract class AbstractTestBase {
     @Before
     public void setup() {
         TestLogger.createCustomLoggers();
+        logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
         org.apache.commons.configuration2.Configuration config = new MapConfiguration(new HashMap());
         engine = new MatchingEngineImplForTest(config);
         engine.startMatching();

@@ -31,11 +31,11 @@ public class TestLogger {
 
     public static void createCustomLoggers() {
 
-        createAppLogger(APP_LOGGER_NAME);
-        createAppLogger(TRADE_LOGGER_NAME);
-
         LoggerNames.setAppLogName(APP_LOGGER_NAME);
         LoggerNames.setTradeLogName(TRADE_LOGGER_NAME);
+
+        createAppLogger(APP_LOGGER_NAME);
+        createAppLogger(TRADE_LOGGER_NAME);
     }
 
     public static void destroyCustomLoggers() {
@@ -81,15 +81,15 @@ public class TestLogger {
         consoleAppender.start();
         config.addAppender(consoleAppender);
 
-        AppenderRef ref = AppenderRef.createAppenderRef("writeLogger", null, null);
-        AppenderRef console = AppenderRef.createAppenderRef("console-log", null, null);
+        AppenderRef ref = AppenderRef.createAppenderRef("writeLogger", Level.DEBUG, null);
+        AppenderRef console = AppenderRef.createAppenderRef("console-log", Level.DEBUG, null);
         AppenderRef[] refs = new AppenderRef[]{ref, console};
 
         LoggerConfig loggerConfig =
-                LoggerConfig.createLogger(false, Level.INFO, loggerName, null, refs, null, config, null);
+                LoggerConfig.createLogger(false, Level.DEBUG, loggerName, "true", refs, null, config, null);
 
-        loggerConfig.addAppender(writerAppender, null, null);
-        loggerConfig.addAppender(consoleAppender, null, null);
+        loggerConfig.addAppender(writerAppender, Level.DEBUG, null);
+        loggerConfig.addAppender(consoleAppender, Level.DEBUG, null);
         config.addLogger(loggerName, loggerConfig);
         ctx.updateLoggers();
     }

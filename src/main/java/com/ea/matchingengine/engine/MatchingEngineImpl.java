@@ -42,8 +42,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MatchingEngineImpl implements MatchingEngine {
 
-    private static final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
-    private static final Logger loggerTrade = LogManager.getLogger(LoggerNames.getTradeLoggerName());
+    private final Logger logger = LogManager.getLogger(LoggerNames.getAppLoggerName());
 
     final Map<String, Book> mapBook = new ConcurrentHashMap();
     final Map<String, BlockingQueue<Request>> mapBookOrdQueue = new ConcurrentHashMap();
