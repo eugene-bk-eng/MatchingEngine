@@ -10,7 +10,6 @@ import com.ea.matchingengine.fix.client.FixOrder;
 import com.ea.matchingengine.testutils.TestLogger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
